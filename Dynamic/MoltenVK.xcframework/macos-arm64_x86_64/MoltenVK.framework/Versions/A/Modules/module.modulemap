@@ -1,0 +1,1 @@
+framework module MoltenVK [system] { header "MoltenVK/mvk_vulkan.h" export * }

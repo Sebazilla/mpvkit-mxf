@@ -1,0 +1,110 @@
+{
+  "Libass": {
+    "sha256": "1e41f5a69c74f6c6407aab84a65ccd0b34e73fa44465f488f99bf22bd61b070d",
+    "url": "https://github.com/mpvkit/libass-build/releases/download/0.17.4/Libass.xcframework.zip"
+  },
+  "Libavcodec": {
+    "sha256": "a429ef54010907f107e949991532f0424e03ddb94260b9c414d1305ed5935ae2",
+    "url": "https://github.com/Sebazilla/mpvkit-mxf/releases/download/0.41.0-mxf/Libavcodec.xcframework.zip"
+  },
+  "Libavdevice": {
+    "sha256": "a937ae225b08304732f0e6cefa5353b4776c93bee947c25a2ac50450d79cad9d",
+    "url": "https://github.com/Sebazilla/mpvkit-mxf/releases/download/0.41.0-mxf/Libavdevice.xcframework.zip"
+  },
+  "Libavfilter": {
+    "sha256": "9b4d7fdb584430f0b8c644ae84769185f17ed136a5e127e35621aee856ec040c",
+    "url": "https://github.com/Sebazilla/mpvkit-mxf/releases/download/0.41.0-mxf/Libavfilter.xcframework.zip"
+  },
+  "Libavformat": {
+    "sha256": "f75db152f80a86a80e75ff881c132a375ca07ef3bd8c7c70282147d37678d011",
+    "url": "https://github.com/Sebazilla/mpvkit-mxf/releases/download/0.41.0-mxf/Libavformat.xcframework.zip"
+  },
+  "Libavutil": {
+    "sha256": "47631caa214c5c123ecab4461d5c837254b1fa93f6776d0300e2e5edcf5df2a4",
+    "url": "https://github.com/Sebazilla/mpvkit-mxf/releases/download/0.41.0-mxf/Libavutil.xcframework.zip"
+  },
+  "Libbluray": {
+    "sha256": "bc037d34e2b0b5ab7f202fb371f5fb298136cc66fdf406c2172185d06f53f18d",
+    "url": "https://github.com/mpvkit/libbluray-build/releases/download/1.4.0/Libbluray.xcframework.zip"
+  },
+  "Libdav1d": {
+    "sha256": "8a8b78e23e28ecc213232805f3c1936141fc9befe113e87234f4f897f430a532",
+    "url": "https://github.com/mpvkit/libdav1d-build/releases/download/1.5.2-xcode/Libdav1d.xcframework.zip"
+  },
+  "Libdovi": {
+    "sha256": "e693e239808350868e79c5448ef9f02e2716bc822dd8632a41a368a1eae5ca7d",
+    "url": "https://github.com/mpvkit/libdovi-build/releases/download/3.3.2/Libdovi.xcframework.zip"
+  },
+  "Libfreetype": {
+    "sha256": "f2840aba1ce35e51c0595557eee82c908dac8e32108ecc0661301c06061e051c",
+    "url": "https://github.com/mpvkit/libass-build/releases/download/0.17.4/Libfreetype.xcframework.zip"
+  },
+  "Libfribidi": {
+    "sha256": "4a55513792ef7a17893875f74cc84c56f3657e8768c07a7a96f563a11dc4b743",
+    "url": "https://github.com/mpvkit/libass-build/releases/download/0.17.4/Libfribidi.xcframework.zip"
+  },
+  "Libharfbuzz": {
+    "sha256": "91558d8497d9d97bc11eeef8b744d104315893bfee8f17483d8002e14565f84b",
+    "url": "https://github.com/mpvkit/libass-build/releases/download/0.17.4/Libharfbuzz.xcframework.zip"
+  },
+  "Libluajit": {
+    "sha256": "8e76f267ee100ff5f3bbde7641b2240566df722241cdf8e135be7ef3d29e237a",
+    "url": "https://github.com/mpvkit/libluajit-build/releases/download/2.1.0-xcode/Libluajit.xcframework.zip"
+  },
+  "Libmpv": {
+    "sha256": "4572ec42359530bc1e96692afdf775205788584f0315fd147ec66b827a48f4dc",
+    "url": "https://github.com/Sebazilla/mpvkit-mxf/releases/download/0.41.0-mxf/Libmpv.xcframework.zip"
+  },
+  "Libplacebo": {
+    "sha256": "2fa3d54cb81f302d6f11c7b2f509af30944381c3b11ee9d35096eb4637a6e2dd",
+    "url": "https://github.com/mpvkit/libplacebo-build/releases/download/7.360.1/Libplacebo.xcframework.zip"
+  },
+  "Libshaderc_combined": {
+    "sha256": "758047b615708575b580eb960a2d083f760a29dc462d6eaa360416c946ce433b",
+    "url": "https://github.com/mpvkit/libshaderc-build/releases/download/2025.5.0/Libshaderc_combined.xcframework.zip"
+  },
+  "Libswresample": {
+    "sha256": "38864457e7647a1172501934e680bfaafa376fb7000d78c2f10bdd4dd9dc697d",
+    "url": "https://github.com/Sebazilla/mpvkit-mxf/releases/download/0.41.0-mxf/Libswresample.xcframework.zip"
+  },
+  "Libswscale": {
+    "sha256": "c7c41cec8e0748a6017e6d1529a2f36cb2a572b6c63595ab3d229f57e1a7bc5c",
+    "url": "https://github.com/Sebazilla/mpvkit-mxf/releases/download/0.41.0-mxf/Libswscale.xcframework.zip"
+  },
+  "Libuavs3d": {
+    "sha256": "1e69250279be9334cd2f6849abdc884c8e4bb29212467b6f071fdc1ac2010b6b",
+    "url": "https://github.com/mpvkit/libuavs3d-build/releases/download/1.2.1-xcode/Libuavs3d.xcframework.zip"
+  },
+  "Libuchardet": {
+    "sha256": "503202caa0dafb6996b2443f53408a713b49f6c2d4a26d7856fd6143513a50d7",
+    "url": "https://github.com/mpvkit/libuchardet-build/releases/download/0.0.8-xcode/Libuchardet.xcframework.zip"
+  },
+  "Libunibreak": {
+    "sha256": "001087c0e927ae00f604422b539898b81eb77230ea7700597b70393cd51e946c",
+    "url": "https://github.com/mpvkit/libass-build/releases/download/0.17.4/Libunibreak.xcframework.zip"
+  },
+  "MoltenVK": {
+    "sha256": "9bd1ca1e4563bacd25d6e55d37b10341d50b2601bc2684bc332188e79daa2b79",
+    "url": "https://github.com/mpvkit/moltenvk-build/releases/download/1.4.1/MoltenVK.xcframework.zip"
+  },
+  "gmp": {
+    "sha256": "ad33c7a08f4cdcb9924c8f0e6d9a054dad33d7794b97667bf8b6fb2b236ae585",
+    "url": "https://github.com/mpvkit/gnutls-build/releases/download/3.8.11/gmp.xcframework.zip"
+  },
+  "gnutls": {
+    "sha256": "3dbec5809339189bf9679e218c6cff387ebf8fb72745927835afc2678f5c9f4d",
+    "url": "https://github.com/mpvkit/gnutls-build/releases/download/3.8.11/gnutls.xcframework.zip"
+  },
+  "hogweed": {
+    "sha256": "25727c9fa67287fa0a4f4722f88bb8be669b23cd7e837e2d00870eb8a25d3f27",
+    "url": "https://github.com/mpvkit/gnutls-build/releases/download/3.8.11/hogweed.xcframework.zip"
+  },
+  "lcms2": {
+    "sha256": "dc0dce0606f6ab6841a8ec5a6bd4448e2f3ef00661a050460f806c9393dc6982",
+    "url": "https://github.com/mpvkit/lcms2-build/releases/download/2.17.0/lcms2.xcframework.zip"
+  },
+  "nettle": {
+    "sha256": "0fdf3ebf8bd7b8bc8eee837cf27261cb4c52ae520b6576a2f468656aa1691e02",
+    "url": "https://github.com/mpvkit/gnutls-build/releases/download/3.8.11/nettle.xcframework.zip"
+  }
+}

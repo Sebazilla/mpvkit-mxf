@@ -19,7 +19,7 @@ let package = Package(
         .target(
             name: "_MPVKit",
             dependencies: [
-                "Libmpv", "_FFmpeg", "Libuchardet", "Libbluray",
+                "Libmpv", "_FFmpeg", "Libuchardet", "Libbluray", "Libudfread",
                 .target(name: "Libluajit", condition: .when(platforms: [.macOS])),
             ],
             path: "Sources/_MPVKit",
@@ -56,7 +56,7 @@ let package = Package(
         .target(
             name: "_MPVKit-GPL",
             dependencies: [
-                "Libmpv-GPL", "_FFmpeg-GPL", "Libuchardet", "Libbluray",
+                "Libmpv-GPL", "_FFmpeg-GPL", "Libuchardet", "Libbluray", "Libudfread",
                 .target(name: "Libluajit", condition: .when(platforms: [.macOS])),
             ],
             path: "Sources/_MPVKit-GPL",
@@ -131,6 +131,11 @@ let package = Package(
             url: "https://github.com/mpvkit/MPVKit/releases/download/0.41.0-n8.1/Libswscale-GPL.xcframework.zip",
             checksum: "d13176eceb2e1aa47c703bd4b0bd549956d3543cbdcede1e96d3d1a27de671d7"
         ),
+        .binaryTarget(
+            name: "Libudfread",
+            path: "Dynamic/Libudfread.xcframework"
+        ),
+
         //AUTO_GENERATE_TARGETS_BEGIN//
 
         .binaryTarget(
@@ -146,25 +151,21 @@ let package = Package(
 
         .binaryTarget(
             name: "gmp",
-            url: "https://github.com/mpvkit/gnutls-build/releases/download/3.8.11/gmp.xcframework.zip",
-            checksum: "ad33c7a08f4cdcb9924c8f0e6d9a054dad33d7794b97667bf8b6fb2b236ae585"
+            path: "Dynamic/gmp.xcframework"
         ),
 
         .binaryTarget(
             name: "nettle",
-            url: "https://github.com/mpvkit/gnutls-build/releases/download/3.8.11/nettle.xcframework.zip",
-            checksum: "0fdf3ebf8bd7b8bc8eee837cf27261cb4c52ae520b6576a2f468656aa1691e02"
+            path: "Dynamic/nettle.xcframework"
         ),
         .binaryTarget(
             name: "hogweed",
-            url: "https://github.com/mpvkit/gnutls-build/releases/download/3.8.11/hogweed.xcframework.zip",
-            checksum: "25727c9fa67287fa0a4f4722f88bb8be669b23cd7e837e2d00870eb8a25d3f27"
+            path: "Dynamic/hogweed.xcframework"
         ),
 
         .binaryTarget(
             name: "gnutls",
-            url: "https://github.com/mpvkit/gnutls-build/releases/download/3.8.11/gnutls.xcframework.zip",
-            checksum: "3dbec5809339189bf9679e218c6cff387ebf8fb72745927835afc2678f5c9f4d"
+            path: "Dynamic/gnutls.xcframework"
         ),
 
         .binaryTarget(
@@ -181,8 +182,7 @@ let package = Package(
 
         .binaryTarget(
             name: "Libfribidi",
-            url: "https://github.com/mpvkit/libass-build/releases/download/0.17.4/Libfribidi.xcframework.zip",
-            checksum: "4a55513792ef7a17893875f74cc84c56f3657e8768c07a7a96f563a11dc4b743"
+            path: "Dynamic/Libfribidi.xcframework"
         ),
 
         .binaryTarget(
@@ -205,8 +205,7 @@ let package = Package(
 
         .binaryTarget(
             name: "Libbluray",
-            url: "https://github.com/mpvkit/libbluray-build/releases/download/1.4.0/Libbluray.xcframework.zip",
-            checksum: "bc037d34e2b0b5ab7f202fb371f5fb298136cc66fdf406c2172185d06f53f18d"
+            path: "Dynamic/Libbluray.xcframework"
         ),
 
         .binaryTarget(
@@ -223,8 +222,7 @@ let package = Package(
 
         .binaryTarget(
             name: "MoltenVK",
-            url: "https://github.com/mpvkit/moltenvk-build/releases/download/1.4.1/MoltenVK.xcframework.zip",
-            checksum: "9bd1ca1e4563bacd25d6e55d37b10341d50b2601bc2684bc332188e79daa2b79"
+            path: "Dynamic/MoltenVK.xcframework"
         ),
 
         .binaryTarget(
@@ -241,8 +239,7 @@ let package = Package(
 
         .binaryTarget(
             name: "Libplacebo",
-            url: "https://github.com/mpvkit/libplacebo-build/releases/download/7.360.1/Libplacebo.xcframework.zip",
-            checksum: "2fa3d54cb81f302d6f11c7b2f509af30944381c3b11ee9d35096eb4637a6e2dd"
+            path: "Dynamic/Libplacebo.xcframework"
         ),
 
         .binaryTarget(
@@ -253,44 +250,36 @@ let package = Package(
 
         .binaryTarget(
             name: "Libavcodec",
-            url: "https://github.com/Sebazilla/mpvkit-mxf/releases/download/0.41.0-mxf/Libavcodec.xcframework.zip",
-            checksum: "a429ef54010907f107e949991532f0424e03ddb94260b9c414d1305ed5935ae2"
+            path: "Dynamic/Libavcodec.xcframework"
         ),
         .binaryTarget(
             name: "Libavdevice",
-            url: "https://github.com/Sebazilla/mpvkit-mxf/releases/download/0.41.0-mxf/Libavdevice.xcframework.zip",
-            checksum: "a937ae225b08304732f0e6cefa5353b4776c93bee947c25a2ac50450d79cad9d"
+            path: "Dynamic/Libavdevice.xcframework"
         ),
         .binaryTarget(
             name: "Libavformat",
-            url: "https://github.com/Sebazilla/mpvkit-mxf/releases/download/0.41.0-mxf/Libavformat.xcframework.zip",
-            checksum: "f75db152f80a86a80e75ff881c132a375ca07ef3bd8c7c70282147d37678d011"
+            path: "Dynamic/Libavformat.xcframework"
         ),
         .binaryTarget(
             name: "Libavfilter",
-            url: "https://github.com/Sebazilla/mpvkit-mxf/releases/download/0.41.0-mxf/Libavfilter.xcframework.zip",
-            checksum: "9b4d7fdb584430f0b8c644ae84769185f17ed136a5e127e35621aee856ec040c"
+            path: "Dynamic/Libavfilter.xcframework"
         ),
         .binaryTarget(
             name: "Libavutil",
-            url: "https://github.com/Sebazilla/mpvkit-mxf/releases/download/0.41.0-mxf/Libavutil.xcframework.zip",
-            checksum: "47631caa214c5c123ecab4461d5c837254b1fa93f6776d0300e2e5edcf5df2a4"
+            path: "Dynamic/Libavutil.xcframework"
         ),
         .binaryTarget(
             name: "Libswresample",
-            url: "https://github.com/Sebazilla/mpvkit-mxf/releases/download/0.41.0-mxf/Libswresample.xcframework.zip",
-            checksum: "38864457e7647a1172501934e680bfaafa376fb7000d78c2f10bdd4dd9dc697d"
+            path: "Dynamic/Libswresample.xcframework"
         ),
         .binaryTarget(
             name: "Libswscale",
-            url: "https://github.com/Sebazilla/mpvkit-mxf/releases/download/0.41.0-mxf/Libswscale.xcframework.zip",
-            checksum: "c7c41cec8e0748a6017e6d1529a2f36cb2a572b6c63595ab3d229f57e1a7bc5c"
+            path: "Dynamic/Libswscale.xcframework"
         ),
 
         .binaryTarget(
             name: "Libuchardet",
-            url: "https://github.com/mpvkit/libuchardet-build/releases/download/0.0.8-xcode/Libuchardet.xcframework.zip",
-            checksum: "503202caa0dafb6996b2443f53408a713b49f6c2d4a26d7856fd6143513a50d7"
+            path: "Dynamic/Libuchardet.xcframework"
         ),
 
         .binaryTarget(
@@ -301,8 +290,7 @@ let package = Package(
 
         .binaryTarget(
             name: "Libmpv",
-            url: "https://github.com/Sebazilla/mpvkit-mxf/releases/download/0.41.0-mxf/Libmpv.xcframework.zip",
-            checksum: "4572ec42359530bc1e96692afdf775205788584f0315fd147ec66b827a48f4dc"
+            path: "Dynamic/Libmpv.xcframework"
         ),
         //AUTO_GENERATE_TARGETS_END//
     ]

@@ -24,11 +24,12 @@ upstream verbatim. Track upstream releases by rebasing this fork.
 
 ## License
 
-LGPL-3.0-or-later, identical to upstream MPVKit. Built without `--enable-gpl`,
-so consumers can dynamically link it from a closed-source app under the LGPL
-re-link clause. The bundled FFmpeg / libmpv / libplacebo / libass / libbluray
-pull in their respective LGPL/permissive licenses — see upstream
-`LICENSE` and the copyright notices inside each xcframework.
+LGPL-3.0-or-later for the MPVKit wrapper/build material, as declared upstream.
+The component sources carry their own LGPL/permissive licences; full LGPL
+texts/notices for the dynamic variant are under Licenses/. This is technical
+provenance, not legal distribution clearance. In particular, the original
+FFmpeg --enable-nonfree setting and generated licence string are explicitly
+documented in BUILD-DYNAMIC.md.
 
 ## Versioning
 
@@ -43,3 +44,11 @@ make build platform=macos
 
 Output xcframeworks land in `dist/release/`. The published GitHub Release
 assets are the same zips, hashed for SwiftPM `binaryTarget(checksum:)`.
+
+## WP-LGPL dynamic macOS variant
+
+The original 0.41.0-mxf assets were static archives. The dynamic variant and its
+pinned build inputs, source-tarball route, component licences, architecture scope
+and technical limitations are documented in [BUILD-DYNAMIC.md](BUILD-DYNAMIC.md).
+Use that build entry instead of the legacy make/Git-bootstrap instructions above.
+No legal distribution clearance is implied.
