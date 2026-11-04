@@ -45,7 +45,28 @@ def source(root, name):
     if not directory.exists():
         directory.parent.mkdir(exist_ok=True)
         subprocess.run(["/usr/bin/tar", "-xf", str(archive), "-C", str(directory.parent)], check=True)
+    verify_extracted(archive, directory)
     return directory
+
+
+
+def verify_extracted(archive, directory):
+    import tarfile
+    import os
+    with tarfile.open(archive) as stream:
+        for member in stream.getmembers():
+            path = directory.parent / member.name
+            if not path.resolve().is_relative_to(directory.resolve()):
+                raise SystemExit("source member escapes extraction root")
+            if member.isfile():
+                if path.read_bytes() != stream.extractfile(member).read():
+                    raise SystemExit("extracted source differs: " + member.name)
+            elif member.issym():
+                if not path.is_symlink() or os.readlink(path) != member.linkname:
+                    raise SystemExit("source symlink differs: " + member.name)
+            elif member.isdir():
+                if not path.is_dir(): raise SystemExit("source directory missing")
+            else: raise SystemExit("unsupported source archive member")
 
 
 def main():
@@ -53,16 +74,20 @@ def main():
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--arch", choices=["arm64", "x86_64"], default="arm64")
     args = parser.parse_args()
-    wait()
+    # Caller holds the mpvlgpl gate lock.
     root = args.root.resolve()
-    if not str(root).startswith("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn/") and root != Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn"):
+    if not str(root).startswith("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2/") and root != Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2"):
         raise SystemExit("build root must be inside the dedicated M3 fork directory")
+    import sys
+    sys.path.insert(0, str(root / "source/tools"))
+    from gnutls.verify_inputs import verify
+    verify(root)
     prefix = root / "prefix" / args.arch
     prefix.mkdir(parents=True, exist_ok=True)
     sdk = subprocess.check_output(["/usr/bin/xcrun", "--sdk", "macosx", "--show-sdk-path"], text=True).strip()
     common = f"-arch {args.arch} -isysroot {sdk} -target {args.arch}-apple-macos11.0 -mmacosx-version-min=11.0"
     env = dict(os.environ)
-    env.update(PATH=f"{root}/toolchain/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+    env.update(PATH=f"{root}/toolchain/bin:/usr/bin:/bin:/usr/sbin:/sbin",
                CC="/usr/bin/clang", CXX="/usr/bin/clang++", LC_ALL="C",
                CFLAGS=common,
                CXXFLAGS=common,

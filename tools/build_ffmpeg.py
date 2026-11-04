@@ -31,11 +31,16 @@ def main():
     p.add_argument("--root", type=Path, required=True)
     p.add_argument("--artifacts", type=Path, required=True)
     p.add_argument("--arch", choices=["arm64", "x86_64"], default="arm64")
+    p.add_argument("--repeat", action="store_true", help="fresh second build, no prefix install")
     args = p.parse_args()
-    wait()
+    # Caller holds the mpvlgpl gate lock.
     root = args.root.resolve()
-    if root != Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn"):
+    if root != Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2"):
         raise SystemExit("only the dedicated M3 root is allowed")
+    import sys
+    sys.path.insert(0, str(root / "source/tools"))
+    from gnutls.verify_inputs import verify
+    verify(root)
     tools = root / "source/tools"
     manifest = json.loads((tools / "dynamic-inputs.json").read_text())
     for name, expected in manifest.items():
@@ -44,6 +49,11 @@ def main():
     source = root / "ffmpeg-source"
     if subprocess.check_output(["git", "-C", str(source), "rev-parse", "HEAD"], text=True).strip() != "9047fa1b084f76b1b4d065af2d743df1b40dfb56":
         raise SystemExit("wrong FFmpeg source revision")
+    patch = subprocess.check_output(["git", "-C", str(source), "diff", "--no-ext-diff", "--no-textconv", "--full-index", "--binary", "HEAD"])
+    if hashlib.sha256(patch).hexdigest() != "79feb56d1e3f999d1d5ad1f90dcf36fbcb9b41e452c8e4a55ac6c1507df77b17":
+        raise SystemExit("unexpected FFmpeg patch")
+    if subprocess.check_output(["git", "-C", str(source), "ls-files", "--others", "--exclude-standard"]):
+        raise SystemExit("untracked FFmpeg input")
     # Same two macOS substitutions as the original fork build recipe.
     video = source / "libavcodec/videotoolbox.c"
     text = video.read_text()
@@ -64,6 +74,8 @@ def main():
     sdk_root = root / "molten-sdk"
     if not (sdk_root / "include/vulkan/vulkan.h").exists():
         subprocess.run(["/usr/bin/ditto", "-x", "-k", str(archive), str(sdk_root)], check=True)
+    from gnutls.verify_inputs import verify_zip
+    verify_zip(archive, SDK_SHA, sdk_root)
     prefix = root / "prefix" / args.arch
     stage = root / "framework-stage" / args.arch
     # One Vulkan implementation must be shared across the three LGPL users.
@@ -71,7 +83,7 @@ def main():
     env_foundation = dict(os.environ)
     subprocess.run(["/usr/bin/python3", str(tools / "build_frameworks.py"), "--root", str(root),
                     "--artifacts", str(args.artifacts), "--arch", args.arch,
-                    "--foundation-only", "--resume", "--refresh-foundations"], check=True, env=env_foundation)
+                    "--foundation-only", "--resume"], check=True, env=env_foundation)
     includes = prefix / "include"
     pc = prefix / "lib/pkgconfig"
     pc.mkdir(parents=True, exist_ok=True)
@@ -83,7 +95,7 @@ def main():
     def link(name, target):
         destination = includes / name
         if destination.is_symlink() and destination.resolve() != target.resolve():
-            destination.unlink()
+            raise SystemExit("refusing to replace existing header symlink")
         if not destination.exists():
             destination.symlink_to(target, target_is_directory=True)
 
@@ -123,23 +135,20 @@ def main():
     package("libxml-2.0", xml_version, "-lxml2", f"-I{sdk}/usr/include/libxml2")
     original = json.loads((tools / "ffmpeg-configs.json").read_text())[args.arch]
     assert "--enable-gpl" not in original
-    flags = [x for x in original if not x.startswith("--prefix=") and x not in {"--disable-shared", "--enable-static"}]
-    flags += [f"--prefix={prefix}", "--enable-shared", "--disable-static", "--install-name-dir=@rpath",
+    flags = [x for x in original if not x.startswith("--prefix=") and x not in {"--disable-shared", "--enable-static", "--enable-nonfree"}]
+    flags += ["--disable-nonfree", "--disable-gpl", f"--prefix={prefix}", "--enable-shared", "--disable-static", "--install-name-dir=@rpath",
               "--cc=/usr/bin/clang", "--cxx=/usr/bin/clang++",
               f"--extra-cflags=-arch {args.arch} -isysroot {sdk} -target {args.arch}-apple-macos11.0 -mmacosx-version-min=11.0 -I{includes}",
               f"--extra-ldflags=-arch {args.arch} -isysroot {sdk} -target {args.arch}-apple-macos11.0 -mmacosx-version-min=11.0 -L{prefix}/lib -F{stage} -lc++"]
-    build = root / "ffmpeg-build" / args.arch
+    build = root / ("ffmpeg-repeat-build" if args.repeat else "ffmpeg-build") / args.arch
     build.mkdir(parents=True, exist_ok=True)
     (build / "configuration-delta.json").write_text(json.dumps({"original": original, "shared": flags}, indent=2) + "\n")
-    env = dict(os.environ, PATH=f"{root}/toolchain/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin",
-               PKG_CONFIG_LIBDIR=str(pc), PKG_CONFIG_PATH=str(pc) + ":/opt/homebrew/opt/sdl2/lib/pkgconfig")
+    env = dict(os.environ, PATH=f"{root}/toolchain/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+               PKG_CONFIG_LIBDIR=str(pc), PKG_CONFIG_PATH=str(pc) + ":" + str(root / "toolchain/sdl2/lib/pkgconfig"))
     run([source / "configure"] + flags, build, env)
-    # Re-link all shared outputs if dependency linkage changed during a resume.
-    for component in ["libavutil", "libavcodec", "libavformat", "libavfilter", "libavdevice", "libswscale", "libswresample"]:
-        for old in (build / component).glob("*.dylib"):
-            old.unlink()
     run(["/usr/bin/make", "-j4"], build, env)
-    run(["/usr/bin/make", "install"], build, env)
+    if not args.repeat:
+        run(["/usr/bin/make", "install"], build, env)
     print("PASS FFmpeg shared source build", args.arch)
 
 

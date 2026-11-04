@@ -82,6 +82,8 @@ def udf_source(root):
     if not directory.exists():
         directory.parent.mkdir(exist_ok=True)
         run(["/usr/bin/tar", "-xf", archive, "-C", directory.parent])
+    from gnutls.build_tls import verify_extracted
+    verify_extracted(archive, directory)
     return directory / "contrib/libudfread"
 
 
@@ -91,13 +93,13 @@ def build_udfread(root, arch):
     build = root / "udfread-build" / arch
     if (prefix / "lib/libudfread.3.dylib").is_file():
         return
-    wait()
+    # Caller holds the mpvlgpl gate lock.
     sdk = subprocess.check_output(["/usr/bin/xcrun", "--sdk", "macosx", "--show-sdk-path"], text=True).strip()
     cross = root / ("udfread-" + arch + ".ini")
     cpu = "aarch64" if arch == "arm64" else "x86_64"
     flags = ["-arch", arch, "-isysroot", sdk, "-target", arch + "-apple-macos11.0", "-mmacosx-version-min=11.0"]
     cross.write_text("[binaries]\nc = '/usr/bin/clang'\n[host_machine]\nsystem = 'darwin'\ncpu_family = '" + cpu + "'\ncpu = '" + cpu + "'\nendian = 'little'\n[properties]\nneeds_exe_wrapper = true\n[built-in options]\nc_args = " + repr(flags) + "\nc_link_args = " + repr(flags) + "\n")
-    meson = "/opt/homebrew/bin/meson"
+    meson = str(root / "toolchain/bin/meson")
     run([meson, "setup", build, source, "--prefix=" + str(prefix), "--cross-file=" + str(cross),
          "--wrap-mode=nodownload", "--buildtype=release", "-Ddefault_library=shared", "-Dembed_udfread=false", "-Denable_examples=false"])
     run([meson, "compile", "-C", build, "-j4"])
@@ -137,12 +139,17 @@ def main():
     p.add_argument("--foundation-only", action="store_true")
     p.add_argument("--resume", action="store_true")
     p.add_argument("--refresh-foundations", action="store_true")
+    p.add_argument("--repeat-stage", action="store_true", help="fresh independent framework reproduction")
     args = p.parse_args()
-    os.environ["PATH"] = str(args.root / "toolchain/bin") + ":/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-    wait()
+    os.environ["PATH"] = str(args.root / "toolchain/bin") + ":/usr/bin:/bin:/usr/sbin:/sbin"
+    # Caller holds the mpvlgpl gate lock.
     root = args.root.resolve()
-    if root != Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn"):
+    if root != Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2"):
         raise SystemExit("only the dedicated M3 root is supported")
+    import sys
+    sys.path.insert(0, str(root / "source/tools"))
+    from gnutls.verify_inputs import verify
+    verify(root)
     fork = root / "source"
     manifest_path = fork / "tools" / "dynamic-inputs.json"
     inputs = {n: sha(input_binary(args.artifacts, n)) for n in DYNAMIC + PERMISSIVE}
@@ -166,7 +173,7 @@ def main():
             run(["/usr/bin/xcodebuild", "-create-xcframework", "-framework", target,
                  "-output", fork / "Dynamic" / f"{name}.xcframework"])
         return
-    output = root / "framework-stage" / args.arch
+    output = root / ("framework-repeat-stage" if args.repeat_stage else "framework-stage") / args.arch
     output.mkdir(parents=True, exist_ok=True)
     completed = []
     for name in (DYNAMIC[:10] if args.foundation_only else DYNAMIC):
@@ -178,7 +185,7 @@ def main():
                 run(["/usr/bin/codesign", "--verify", "--deep", "--strict", target])
                 completed.append(name)
                 continue
-            shutil.rmtree(target)  # Only generated output inside the dedicated stage.
+            raise SystemExit("use a fresh stage; deletion prohibited")
         if name in {"MoltenVK", "Libudfread"}:
             version = target / "Versions/A"
             (version / "Resources").mkdir(parents=True)
@@ -219,7 +226,7 @@ def main():
         metadata["LSMinimumSystemVersion"] = "11.0"
         info.write_bytes(plistlib.dumps(metadata))
         binary = (target / name).resolve()
-        binary.unlink(missing_ok=True)
+        # Fresh copied wrapper is overwritten below.
         if name in SOURCE_LIBS:
             if name == "Libudfread":
                 build_udfread(root, args.arch)
@@ -255,7 +262,7 @@ def main():
         run(["/usr/bin/install_name_tool", "-id", f"@rpath/{name}.framework/{name}", binary])
         rewrite_loads(binary)
         # Do not ship inherited signatures for modified binaries.
-        subprocess.run(["/usr/bin/codesign", "--remove-signature", str(target)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        # Force-sign only the new output below.
         run(["/usr/bin/codesign", "--force", "--sign", "-", str(target)])
         completed.append(name)
     print("dynamic frameworks bytes", sum((output / f"{n}.framework" / n).stat().st_size for n in (DYNAMIC[:10] if args.foundation_only else DYNAMIC)))

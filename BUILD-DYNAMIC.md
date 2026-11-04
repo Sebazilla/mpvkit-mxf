@@ -43,7 +43,7 @@ private ff_* symbols that cannot resolve across separate dylibs. The original
 configuration for each architecture is extracted from its own avutil archive
 and recorded in tools/ffmpeg-configs.json. build_ffmpeg.py changes only output
 linkage/install paths and supplies local dependency metadata; it retains codec,
-MXF, licensing and per-architecture options, plus the original two VideoToolbox
+MXF and per-architecture options; the dyn2 licensing exception removes enable-nonfree and sets disable-nonfree/disable-gpl, plus the original two VideoToolbox
 macro substitutions. MoltenVK's original 1.4.1 header SDK is SHA256-pinned in
 the script. The generated configuration-delta.json records old/new arguments.
 
@@ -67,7 +67,7 @@ all LGPL components. Install names are `@rpath/Name.framework/Name`. Framework
 layout is normalized to Versions/A, with minimum-system metadata corrected from
 the static wrapper's placeholder to 11.0. Libraries are individually ad-hoc signed.
 
-The original FFmpeg configuration contains `--enable-nonfree` and a generated
+Historical input (0.41.0-mxf-dyn only): The original FFmpeg configuration contains `--enable-nonfree` and a generated
 `FFMPEG_LICENSE` string of `nonfree and unredistributable`. This is pre-existing
 and deliberately not silently changed by an object-code relink. No `--enable-gpl`
 is added and no GPL target is linked. This document describes technical provenance;
@@ -79,23 +79,21 @@ Sources/BuildScripts/patch/libmpv retained verbatim.
 
 ## Dedicated M3 build
 
-Build only in `/Volumes/4M2/Dev/rushdeck/mpvkit-dyn/`, with this checkout as
+Build only in `/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2/`, with this checkout as
 `source/`. No global installation and no GUI. A fresh reproduction uses fresh
 prefix, tls-build and framework-stage directories. Installed-source markers are
 only local resume points; do not reuse them after changing configuration/compiler.
 Keep all logs outside this repository in WP-LGPL-measurements.
 
-Run `python3 source/tools/gnutls/wait_for_m3.py` before each build/gate/smoke.
-It waits in 120-second intervals, up to 180 minutes, without signalling any other
-process. A deploy/merge gate takes priority. Set RUSHDECK_CATALOG_DIR to a fresh
+Acquire the mpvlgpl M3 gate lock before builds/gates/smoke. A deploy/merge gate takes priority. The dyn2 drivers no longer run the legacy process poller inside their child invocations. Set RUSHDECK_CATALOG_DIR to a fresh
 temporary directory for every binary invocation. Run build commands with nice 10.
 
 For each `arm64` and `x86_64`, run from the dedicated root:
 
 ```
-python3 source/tools/gnutls/build_tls.py --root /Volumes/4M2/Dev/rushdeck/mpvkit-dyn --arch <arch>
-python3 source/tools/build_ffmpeg.py --root /Volumes/4M2/Dev/rushdeck/mpvkit-dyn --artifacts <input-directory> --arch <arch>
-python3 source/tools/build_frameworks.py --root /Volumes/4M2/Dev/rushdeck/mpvkit-dyn --artifacts <input-directory> --arch <arch> --resume
+python3 source/tools/gnutls/build_tls.py --root /Volumes/4M2/Dev/rushdeck/mpvkit-dyn2 --arch <arch>
+python3 source/tools/build_ffmpeg.py --root /Volumes/4M2/Dev/rushdeck/mpvkit-dyn2 --artifacts <input-directory> --arch <arch>
+python3 source/tools/build_frameworks.py --root /Volumes/4M2/Dev/rushdeck/mpvkit-dyn2 --artifacts <input-directory> --arch <arch> --resume
 ```
 
 The FFmpeg driver fetches/checks the pinned MoltenVK SDK and prepares the foundation frameworks before configuring FFmpeg. Then combine with the same build_frameworks invocation plus `--combine`.
@@ -144,3 +142,59 @@ existing shared configuration. It never installs over the baseline prefix and
 asserts equality of the exported symbol set before signing the replacement.
 RushDeck's tools/smoke/lgpl_swap.py uses this framework only in a fresh temporary
 app copy and verifies the marker, decode and unchanged original build framework.
+
+
+## Historical Round 2 addendum for 0.41.0-mxf-dyn (retained verbatim)
+
+The published 0.41.0-mxf-dyn tag remains unchanged; this local documentation addendum does not rebuild or republish binaries. The build PATH includes /opt/homebrew/bin and may select existing host tools. Extracted release source trees are reused without rechecking their contents. The FFmpeg recipe checks HEAD but does not require a clean working tree. Byte identity is evidenced only for repeated arm64 relink/sign, not x86_64 or a full source rebuild. These are known limitations, not reproducibility guarantees.
+
+Round 2 license clarification: uchardet is treated under the MPL-1.1 alternative matching Licenses/uchardet/COPYING; the earlier conservative LGPL label is superseded. Separate notices for libass, FreeType, HarfBuzz, libunibreak, dav1d, LuaJIT, libuavs3d, libdovi, lcms2 and shaderc_combined are not present as tracked license documents in this tag and remain a distribution review item.
+
+
+## WP-MPV-LGPL: 0.41.0-mxf-dyn2
+
+The new tag is additive. Neither 0.41.0-mxf-dyn nor its dedicated mpvkit-dyn
+build directory is modified. Both architectures retain all generated feature
+macros, except CONFIG_NONFREE=0. CONFIG_GPL=0 and CONFIG_VERSION3=1 remain.
+The library license is LGPL version 3 or later. GnuTLS remains enabled.
+Only the licensing flags differ from the prior shared FFmpeg configuration,
+besides isolated paths. Compare config.h, config_components.h and enabled lists
+against the prior build before publishing. Stop on any feature/decode regression
+or an app-bundle size change greater than 50 MB.
+
+Fresh inputs come from SHA256-verified original ZIPs and release tarballs.
+verify_inputs.py checks each extracted original ZIP member, each extracted
+release-source member and the explicit tool/SDL content hashes before drivers
+run. FFmpeg HEAD, its exact two-substitution patch hash and absence of untracked
+source inputs are checked. No Homebrew search directory is on PATH or generic
+pkg-config paths: toolchain/bin contains only explicit pre-existing tools,
+recorded in tools/toolchain-inputs.json. Existing Meson/Python and pkgconf/nasm
+are host tools, not a claim of a hermetic compiler/toolchain bootstrap. The
+original arm64 ffplay configuration retains the recorded SDL2 input; ffplay and
+SDL are not included in RushDeck's framework bundle. No package installation.
+The Xcode compiler/SDK are recorded with the external measurements.
+
+Use a fresh root (never remove prior outputs). TLS tarballs are freshly extracted
+and checked; shared prefixes and framework stages are new. Existing frameworks
+are only accepted with --resume for already completed foundations; any request
+to refresh/clean them fails. A second FFmpeg build uses --repeat and the fresh
+ffmpeg-repeat-build/<arch> directory, with identical configure arguments and no
+prefix installation. Compare all seven shared-library hashes, config macros and
+exports for both architectures. The marked replacement driver similarly uses
+fresh source/configure/build paths rather than cleaning copied outputs.
+
+The corresponding-source offer includes every libplacebo recursive gitlink at
+its pinned revision (Vulkan-Headers, fast_float, glad, jinja, markupsafe, nuklear).
+These sources are offer inputs; retained PIC libplacebo is not rebuilt. Gitlink
+archives must be extracted into the parent source tree at their recorded paths.
+The older Round 2 addendum above describes the old tag only; its limitations
+are not silently recharacterized as guarantees for that historical build.
+
+
+Validation on the recorded Xcode 26.6 toolchain: fresh FFmpeg repeat builds
+are byte-identical for all seven dylibs on both architectures. Independent
+--repeat-stage framework relinks/signs are byte-identical for all 18 components
+on both architectures. The generated feature/component lists match the old
+build. An arm64 synthetic MP4/MXF decode digest comparison gives identical
+video/audio bytes, frame counts and sample counts. This is not an x86_64 runtime
+claim or a portable bit-reproducibility guarantee across different Xcode versions.
