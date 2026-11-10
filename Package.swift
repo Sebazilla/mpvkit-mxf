@@ -177,8 +177,7 @@ let package = Package(
 
         .binaryTarget(
             name: "Libharfbuzz",
-            url: "https://github.com/mpvkit/libass-build/releases/download/0.17.5/Libharfbuzz.xcframework.zip",
-            checksum: "aa8e0b9ca0387dac74e3e93c86e34d11982bb013b28022d0e6966a8427a35b2e"
+            path: "Static/Libharfbuzz.xcframework"
         ),
 
         .binaryTarget(
