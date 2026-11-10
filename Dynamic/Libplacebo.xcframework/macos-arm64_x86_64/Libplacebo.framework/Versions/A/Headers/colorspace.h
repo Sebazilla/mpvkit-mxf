@@ -138,7 +138,7 @@ struct pl_dovi_metadata {
     // Reshape data, grouped by component
     struct pl_reshape_data {
         uint8_t num_pivots;
-        float pivots[9]; // normalized to [0.0, 1.0] based on BL bit depth
+        float pivots[9]; // pivot codes divided by 2^BL_bit_depth
         uint8_t method[8]; // 0 = polynomial, 1 = MMR
         // Note: these must be normalized (divide by coefficient_log2_denom)
         float poly_coeffs[8][3]; // x^0, x^1, x^2, unused must be 0
@@ -146,6 +146,23 @@ struct pl_dovi_metadata {
         float mmr_constant[8];
         float mmr_coeffs[8][3 /* order */][7];
     } comp[3];
+
+    // Non-linear inverse quantization (NLQ) parameters for FEL composition.
+    // Used only when an enhancement layer is used. Ignored for MEL and non-FEL
+    // profile 7 streams. When `nlq_active` is false the rest of these fields are
+    // unused and only BL-only reshape is performed.
+    //
+    // LINEAR_DZ dequantization of the EL code e, with rr = e - offset:
+    //   residual = 0                                                  if rr == 0
+    //   residual = sign(rr) * ((|rr| - 0.5) * deadzone_slope + deadzone_threshold)
+    // bounded to [-hdr_in_max, hdr_in_max]
+    bool nlq_active;
+    struct pl_dovi_nlq_data {
+        float offset;             // nlq_offset, in EL codes
+        float deadzone_slope;     // linear_deadzone_slope / 2^coef_log2_denom
+        float deadzone_threshold; // linear_deadzone_threshold / 2^coef_log2_denom
+        float hdr_in_max;         // hdr_in_max / 2^coef_log2_denom
+    } nlq[3];
 };
 
 // Struct describing the underlying color system and representation. This
@@ -187,9 +204,18 @@ PL_API void pl_color_repr_merge(struct pl_color_repr *orig,
 // This function normalizes the color representation such that
 // color_depth=sample_depth and bit_shift=0; and returns the scaling factor
 // that must be multiplied into the color value to accomplish this, assuming
-// it has already been sampled by the GPU. If unknown, the color and sample
-// depth will both be inferred as 8 bits for the purposes of this conversion.
+// it has already been sampled by the GPU. A full range signal is normalized
+// to the range of its color depth, so both depths become the color depth; a
+// limited range signal to the range of the sample depth. If unknown, the
+// color and sample depth will both be inferred as 8 bits for the purposes of
+// this conversion.
 PL_API float pl_color_repr_normalize(struct pl_color_repr *repr);
+
+// Compute the stored value limits for the given color representation,
+// including the effects of the bit encoding scheme. This can be used to
+// compute a hard bound on the stored texel values
+PL_API void pl_color_repr_limits(const struct pl_color_repr *repr,
+                                 float out_min[4], float out_max[4]);
 
 // Guesses the best color levels based on the specified color levels and
 // falling back to using the color system instead. YCbCr-like systems are
@@ -253,6 +279,7 @@ enum pl_color_transfer {
     PL_COLOR_TRC_V_LOG,         // Panasonic V-Log (VARICAM)
     PL_COLOR_TRC_S_LOG1,        // Sony S-Log1
     PL_COLOR_TRC_S_LOG2,        // Sony S-Log2
+    PL_COLOR_TRC_SCRGB,         // IEC 61966-2-2 scRGB (extended linear BT.709)
     PL_COLOR_TRC_COUNT
 };
 
@@ -278,6 +305,13 @@ static inline bool pl_color_transfer_is_hdr(enum pl_color_transfer trc)
 // that is assumed for SDR content, for use when mapping between HDR and SDR in
 // display space. See ITU-R Report BT.2408 for more information.
 #define PL_COLOR_SDR_WHITE 203.0f
+
+// This defines the reference white level for scRGB (IEC 61966-2-2), in cd/m^2.
+// In scRGB, a linear signal value of 1.0 corresponds to exactly 80 cd/m^2.
+// Signal values above 1.0 represent HDR luminance; values below 0.0 represent
+// out-of-gamut colors. This constant is used to convert between libplacebo's
+// internal NORM scale (1.0 = PL_COLOR_SDR_WHITE) and scRGB output values.
+#define PL_COLOR_SCRGB_WHITE 80.0f
 
 // This defines the assumed contrast level of an unknown SDR display. This
 // will be used to determine the black point in the absence of any tagged
@@ -415,7 +449,8 @@ struct pl_hdr_metadata {
     struct pl_raw_primaries prim;   // mastering display primaries
     float min_luma, max_luma;       // min/max luminance (in cd/m²)
 
-    // Content light level. (Note: this is ignored by libplacebo itself)
+    // Content light level. `max_cll` is used as a fallback when mastering
+    // display max luminance metadata is unavailable.
     float max_cll;                  // max content light level (in cd/m²)
     float max_fall;                 // max frame average light level (in cd/m²)
 
@@ -713,10 +748,33 @@ PL_API pl_matrix3x3 pl_get_cone_matrix(const struct pl_cone_params *params,
 // Note: For BT.2100 ICtCp, this outputs in the color space L'M'S'. Further
 // non-linear processing must be done by the caller.
 //
-// Note: XYZ system is expected to be in DCDM X'Y'Z' encoding (ST 428-1), in
-// practice this means normalizing by (48.0 / 52.37) factor and applying 2.6 gamma
+// Note: For PL_COLOR_SYSTEM_XYZ, the input is expected to be linear light,
+// i.e. the transfer function (in practice ST 428-1, for DCDM X'Y'Z') must
+// already have been undone. The resulting RGB uses DCI-P3 primaries, the
+// reference space of DCDM. Use `pl_color_repr_decode_ex` to decode into a
+// different RGB color space.
 PL_API pl_transform3x3 pl_color_repr_decode(struct pl_color_repr *repr,
                                             const struct pl_color_adjustment *params);
+
+struct pl_color_repr_decode_params {
+    // Color adjustment parameters. If NULL, defaults to
+    // `&pl_color_adjustment_neutral`.
+    const struct pl_color_adjustment *adjustment;
+
+    // The primaries of the RGB color space to decode into. Currently only
+    // relevant for PL_COLOR_SYSTEM_XYZ: XYZ tristimulus values are
+    // device-independent, so this choice decides which XYZ value decodes to
+    // RGB white (i.e. the adopted white point of the content), as well as the
+    // nominal gamut of the result. Defaults to PL_COLOR_PRIM_DCI_P3.
+    enum pl_color_primaries primaries;
+};
+
+#define pl_color_repr_decode_params(...) \
+    (&(struct pl_color_repr_decode_params) { __VA_ARGS__ })
+
+// Extended version of `pl_color_repr_decode`. `params` may be NULL.
+PL_API pl_transform3x3 pl_color_repr_decode_ex(struct pl_color_repr *repr,
+                                               const struct pl_color_repr_decode_params *params);
 
 // Common struct to describe an ICC profile
 struct pl_icc_profile {

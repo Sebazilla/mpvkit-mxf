@@ -37,28 +37,75 @@ PL_API_BEGIN
 PL_API void pl_shader_set_alpha(pl_shader sh, struct pl_color_repr *repr,
                                 enum pl_alpha_mode mode);
 
-// Colorspace reshaping for PL_COLOR_SYSTEM_DOLBYVISION. Note that this is done
+// Colorspace reshaping for PL_COLOR_SYSTEM_DOLBYVISION. The input color holds
+// the base layer sample codes divided by 2^BL_bit_depth. Note that this is done
 // automatically by `pl_shader_decode_color` for PL_COLOR_SYSTEM_DOLBYVISION.
 PL_API void pl_shader_dovi_reshape(pl_shader sh, const struct pl_dovi_metadata *data);
 
+// Arguments for the `pl_shader_decode_color_ex` call.
+struct pl_color_decode_args {
+    // Input color representation. Mutated to reflect the decode. Required.
+    struct pl_color_repr *repr;
+
+    // Color adjustment parameters. If NULL, defaults to
+    // `&pl_color_adjustment_neutral`.
+    const struct pl_color_adjustment *color_adjustment;
+
+    // Optional sub-shader producing the enhancement-layer. The expected format
+    // and output of the shader depends on the EL being used, based on repr.
+    // Currently only Dolby Vision EL is supported, whose shader returns the
+    // EL sample codes as floats.
+    pl_shader enhancement_layer;
+
+    // The primaries of the RGB color space to decode into. Only relevant for
+    // PL_COLOR_SYSTEM_XYZ, see `pl_color_repr_decode_params.primaries`.
+    // Defaults to PL_COLOR_PRIM_DCI_P3 if unknown.
+    enum pl_color_primaries primaries;
+};
+
+#define pl_color_decode_args(...) (&(struct pl_color_decode_args) { __VA_ARGS__ })
+
 // Decode the color into normalized RGB, given a specified color_repr. This
 // also takes care of additional pre- and post-conversions requires for the
-// "special" color systems (XYZ, BT.2020-C, etc.). If `params` is left as NULL,
-// it defaults to &pl_color_adjustment_neutral.
+// "special" color systems (XYZ, BT.2020-C, etc.). If `args->color_adjustment`
+// is left as NULL, it defaults to &pl_color_adjustment_neutral.
 //
 // Note: This function always returns PC-range RGB with independent alpha.
 // It mutates the pl_color_repr to reflect the change.
 //
-// Note: For DCDM XYZ decoding input is expected to be linear, use
-// `pl_shader_linearize` before calling this function.
+// Note: For XYZ decoding, the input is expected to be linear (use
+// `pl_shader_linearize` before calling this function), and the output is
+// linear RGB with the primaries given by `args->primaries`.
+PL_API void pl_shader_decode_color_ex(pl_shader sh,
+                                      const struct pl_color_decode_args *args);
+
+// Backwards compatibility wrapper around `pl_shader_decode_color_ex`.
+PL_DEPRECATED_IN(v7.368)
 PL_API void pl_shader_decode_color(pl_shader sh, struct pl_color_repr *repr,
                                    const struct pl_color_adjustment *params);
 
+struct pl_color_encode_args {
+    // The color representation to encode into. Required.
+    const struct pl_color_repr *repr;
+
+    // The primaries of the RGB input color space. Only relevant for
+    // PL_COLOR_SYSTEM_XYZ, see `pl_color_repr_decode_params.primaries`.
+    // Defaults to PL_COLOR_PRIM_DCI_P3 if unknown.
+    enum pl_color_primaries primaries;
+};
+
+#define pl_color_encode_args(...) (&(struct pl_color_encode_args) { __VA_ARGS__ })
+
 // Encodes a color from normalized, PC-range, independent alpha RGB into a
 // given representation. That is, this performs the inverse operation of
-// `pl_shader_decode_color` (sans color adjustments).
+// `pl_shader_decode_color_ex` (sans color adjustments).
 //
-// Note: For DCDM XYZ encoding input is expected to be linear
+// Note: For XYZ encoding, the input is expected to be linear RGB with the
+// primaries given by `args->primaries`, and the output is linear XYZ.
+PL_API void pl_shader_encode_color_ex(pl_shader sh,
+                                      const struct pl_color_encode_args *args);
+
+// Convenience wrapper around `pl_shader_encode_color_ex`.
 PL_API void pl_shader_encode_color(pl_shader sh, const struct pl_color_repr *repr);
 
 // Linearize (expand) `vec4 color`, given a specified color space. Shader
@@ -185,7 +232,7 @@ PL_API bool pl_shader_detect_peak(pl_shader sh, struct pl_color_space csp,
                                   const struct pl_peak_detect_params *params);
 
 // After dispatching the above shader, this function can be used to retrieve
-// the detected dynamic HDR10+ metadata parameters. The other fields of
+// the detected dynamic HDR metadata parameters. The other fields of
 // `metadata` are not written to. Returns whether or not any values were
 // written. If not, the values are left untouched, so this can be used to
 // safely update `pl_hdr_metadata` values in-place. This function may or may
@@ -266,6 +313,33 @@ struct pl_color_map_params {
     // value allows overriding the default metadata preference logic.
     enum pl_hdr_metadata_type metadata;
 
+    // If nonzero, source channel values above the mastering display's peak
+    // luminance are softly clipped toward it, reproducing the as-mastered
+    // appearance. Defaults to 1.0.
+    //
+    // Only engages when the mastering metadata is trustworthy: the strength
+    // fades out continuously as the measured scene luminance exceeds the
+    // mastering peak (between 1.1x and 1.4x of it), so badly mastered
+    // content with wrong metadata is not clipped.
+    float mastering_clip; // [0,1]
+
+    // Strength of the film response in the tone application. The tone curve
+    // is evaluated per cone (LMS) channel, whitening compressed emissive
+    // gradients along perceptually plausible paths the way print film does,
+    // at the cost of some saturation of compressed colors. This value blends
+    // between preserving the source chromaticity exactly (0.0) and the full
+    // cone-space response (1.0). Content the curve passes linearly renders
+    // identically at any strength.
+    //
+    // In practice, higher values give strongly compressed highlights (fire,
+    // explosions, bright emissive gradients) more punch. They whiten towards
+    // their peak the way they would on a brighter display, instead of
+    // flattening into a dim uniformly-colored patch. Lower values keep such
+    // highlights fully saturated at the cost of that intensity. Values above
+    // 1.0 extrapolate beyond the full response for even more punch, at the
+    // cost of clipping the brightest compressed highlights. Defaults to 0.3.
+    float film_strength; // [0,2]
+
     // Tone mapping LUT size. Defaults to 256.
     int lut_size;
 
@@ -317,6 +391,8 @@ struct pl_color_map_params {
     .gamut_constants        = { PL_GAMUT_MAP_CONSTANTS },       \
     .tone_constants         = { PL_TONE_MAP_CONSTANTS },        \
     .metadata               = PL_HDR_METADATA_ANY,              \
+    .mastering_clip         = 1.0f,                             \
+    .film_strength          = 0.3f,                             \
     .lut3d_size             = {48, 32, 256},                    \
     .lut_size               = 256,                              \
     .visualize_rect         = {0, 0, 1, 1},                     \

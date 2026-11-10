@@ -6,7 +6,7 @@
 	<dict>
 		<key>Resources/Info.plist</key>
 		<data>
-		ZWaxx0uzptc46hdLI05zPmBKQAc=
+		QnNd6IkDAaRsmyDGxYpKUkVkcfg=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -22,21 +22,28 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			tBUxki4CoDqCFBFnSnEMXyLVc0/BOjiMChm1NZBqGdM=
+			e8dkp26p7JpCG5rqYqr9owyQ3vNUmDibm4d129f8CFQ=
 			</data>
 		</dict>
 		<key>Headers/common.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			1h1kJQOHg6qTWC2A2Ogo7LY/z7bG+dXRV36V05lvTxA=
+			xst7eWCxv/lbNBKOWx9jEtdQaOCevEgIBB/S6/kxJZU=
+			</data>
+		</dict>
+		<key>Headers/compositor.h</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			vyunjG5Rt8qRwLuxOcxfwnZ5MQx5SfgaTpocst7t1m4=
 			</data>
 		</dict>
 		<key>Headers/config.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			EQc81bEkK2VXEhfmu19UHF2Ah+J+hHz0NY/yBl++O8E=
+			xlUTq0zQiI1tGeeEs0Dl8gNg6qZx5ELJYf14GYAXMvk=
 			</data>
 		</dict>
 		<key>Headers/d3d11.h</key>
@@ -106,14 +113,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			2gbKEytkLQPUJUzS4xWBlOw0GpHyFB68nARvsXl3z5A=
+			285IiRQVeR79Kq4xkAcltD61YpZLM/6QNA1d2Q1aZiw=
 			</data>
 		</dict>
 		<key>Headers/renderer.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			g5V7u3HZeu5X1FcUAxAmWfbuhQMwjsa2FLFtyho3/UY=
+			t5MoAKB8qxzhBUT1DCpUZr/R5mWYOhpv3zi8sUveP7c=
 			</data>
 		</dict>
 		<key>Headers/shaders.h</key>
@@ -127,7 +134,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			/jcPYkc6fVu7mJVHCS6/jdG15pXJ8JeRS41yUrjqZyY=
+			oKtSwMJARfVeZRJMhDBmzwXnKaAkB2XG4qQE26GOuSU=
 			</data>
 		</dict>
 		<key>Headers/shaders/custom.h</key>
@@ -141,7 +148,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			gUQx14Jn/NjyDVaogw3TGOrFQfeKY+lbPX1JTy0cfVw=
+			w6IRkXkkIfbMcHwkc1xKEgohNf025uWMG4ld70JE77A=
 			</data>
 		</dict>
 		<key>Headers/shaders/dithering.h</key>
@@ -204,7 +211,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			Wuch10akoaDfEdyyIZ9rlxK94JtBS7igB0wI0wiruos=
+			KXf5ZFbZcpGEVXGJqaNIn24IIn8iEfUAeb5QsiZRkX4=
 			</data>
 		</dict>
 		<key>Headers/utils/dolbyvision.h</key>
@@ -218,21 +225,21 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			X8UZnxzo+ENqK0VewX/3UfboF99WDnkev2Hc2tuZXlE=
+			FGcZgvpUKPw8fC2v79tqHZo5nXKHqOUtXO/DvrQH8dI=
 			</data>
 		</dict>
 		<key>Headers/utils/libav.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			rjtBRlCZ4HHAGH3KPd9vIWv2pfxJe4atfYGq0lTFDlA=
+			NNIgcZ5nisiRoOW/U+0qbHlJMfeNVWyDTRm51a2OFuo=
 			</data>
 		</dict>
 		<key>Headers/utils/libav_internal.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			laoIGhBASRuIcMb5AcMd/T7br12o8vFjh5LoDfIUFC0=
+			ZBEcY76eBHJAf/QU11xpENdN5baYTCBU+Z/7QkyiehE=
 			</data>
 		</dict>
 		<key>Headers/utils/upload.h</key>
@@ -246,7 +253,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			fDqBeNtzDpvB+2b3LOfe51lMNhNZxepDqosegoML0Ds=
+			dK3m9p7W8/IGRizhQ+1/r9wlXsmOjtX+SpUvFLsVM34=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>
@@ -260,7 +267,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			KdZrDg/V7Ca8ia5svY0cQhca02Yr3i4mqBWFXCIj7I0=
+			oKSoopVhQss6nmtb866YbDvGJ9FY2NZgTgN5pfd89fQ=
 			</data>
 		</dict>
 	</dict>

@@ -104,6 +104,7 @@ PL_API void pl_vk_inst_destroy(pl_vk_inst *inst);
 struct pl_vulkan_queue {
     uint32_t index; // Queue family index
     uint32_t count; // Queue family count
+    VkDeviceQueueCreateFlags flags; // Queue family flags
 };
 
 // Structure representing the actual vulkan device and associated GPU instance
@@ -146,6 +147,13 @@ struct pl_vulkan_t {
     // submission or other related operations when sharing the VkDevice between
     // multiple threads, Using this on queue families or indices not contained
     // in `queues` is undefined behavior.
+    //
+    // These are no-ops when the device was created with
+    // VK_KHR_internally_synchronized_queues. libplacebo only enables it when
+    // requested through `pl_vulkan_params.opt_extensions` and `.features`,
+    // because queues created with it must be retrieved with the matching
+    // VkDeviceQueueCreateFlags (see `pl_vulkan_queue.flags`), which every
+    // other user of the device has to know about.
     void (*lock_queue)(pl_vulkan vk, uint32_t qf, uint32_t qidx);
     void (*unlock_queue)(pl_vulkan vk, uint32_t qf, uint32_t qidx);
 
@@ -433,6 +441,9 @@ struct pl_vulkan_import_params {
 
     // Functions for locking a queue. If set, these will be used instead of
     // libplacebo's internal functions for `pl_vulkan.(un)lock_queue`.
+    // If not set, libplacebo will use its own internal locking, unless the
+    // device was created with VK_KHR_internally_synchronized_queues enabled
+    // (as indicated by `features`), in which case locking is skipped.
     void (*lock_queue)(void *ctx, uint32_t qf, uint32_t qidx);
     void (*unlock_queue)(void *ctx, uint32_t qf, uint32_t qidx);
     void *queue_ctx;
