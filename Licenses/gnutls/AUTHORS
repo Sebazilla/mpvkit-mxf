@@ -4,17 +4,18 @@ Nikos Mavrogiannopoulos <nmav at gnutls.org>
 Simon Josefsson <jas at josefsson.org>
 Daiki Ueno <ueno at gnu.org>
 Dmitry Baryshkov <dbaryshkov at gmail.com>
+Alexander Sosedkin <asosedkin at redhat.com>
 Tim Rühsen <tim.ruehsen at gmx.de>
 Ludovic Courtès <ludo at gnu.org>
-Timo Schulz <twoaday at gnutls.org>
 Zoltan Fridrich <zfridric at redhat.com>
+Timo Schulz <twoaday at gnutls.org>
 Jonathan Bastien-Filiatrault <joe at x2a.org>
 Andreas Metzler <ametzler at debian.org>
-Alexander Sosedkin <asosedkin at redhat.com>
 Alon Bar-Lev <alon.barlev at gmail.com>
 Daniel Kahn Gillmor <dkg at fifthhorseman.net>
 František Krenželok <krenzelok.frantisek at gmail.com>
 Tom Vrancken <dev at tomvrancken.nl>
+d-Dudas <david.dudas03 at e-uvt.ro>
 Martin Storsjo <martin at martin.st>
 Tim Kosse <tim.kosse at filezilla-project.org>
 Simo Sorce <simo at redhat.com>
@@ -32,7 +33,6 @@ Jiasheng Jiang <jian1000 at purdue.edu>
 Martin Ukrop <mukrop at redhat.com>
 Jaak Ristioja <jaak.ristioja at cyber.ee>
 Jakub Jelen <jjelen at redhat.com>
-d-Dudas <david.dudas03 at e-uvt.ro>
 Attila Molnar <attilamolnar at hush.com>
 Hugo Beauzée-Luyssen <hugo at beauzee.fr>
 Stanislav Zidek <szidek at redhat.com>
@@ -49,11 +49,13 @@ Nikolay Sivov <nsivov at codeweavers.com>
 Sahana Prasad <sahana at redhat.com>
 Tobias Heider <tobias.heider at canonical.com>
 Eric Blake <eblake at redhat.com>
+Maxim Cournoyer <maxim at guixotic.coop>
 Michael Catanzaro <mcatanzaro at gnome.org>
 Stefan Kangas <stefankangas at gmail.com>
 xuraoqing <609179072 at qq.com>
 Angel Yankov <angel.yankov at suse.com>
 Daniel Lenski <dlenski at gmail.com>
+Ghadi Elie Rahme <ghadi.rahme at canonical.com>
 JonasZhou <JonasZhou at zhaoxin.com>
 Stefan Sørensen <stefan.sorensen at spectralink.com>
 Adam Sampson <ats at offog.org>
@@ -61,12 +63,12 @@ Alfredo Pironti <alfredo at pironti.eu>
 Brad Hards <bradh at frogmouth.net>
 Dimitri John Ledkov <xnox at ubuntu.com>
 Hubert Kario <hkario at redhat.com>
-Maxim Cournoyer <maxim at guixotic.coop>
 Michael Weiser <michael.weiser at gmx.de>
 Patrick Pelletier <code at funwithsoftware.org>
 Pedro Monreal <pmgdeb at gmail.com>
 Rolf Eike Beer <eike at sf-mail.de>
 Ruslan N. Marchenko <me at ruff.mobi>
+Sam James <sam at gentoo.org>
 Sjoerd Simons <sjoerd.simons at collabora.co.uk>
 Stefan Bühler <stbuehler at web.de>
 Thomas Klute <thomas2.klute at uni-dortmund.de>
@@ -83,12 +85,12 @@ Evgeny Grin <k2k at narod.ru>
 Gustavo Zacarias <gustavo at zacarias.com.ar>
 James Bottomley <James.Bottomley at HansenPartnership.com>
 Jiří Klimeš <jklimes at redhat.com>
+Joshua Rogers of AISLE Research Team <joshua at joshua.hu>
 Karsten Ohme <k_o_ at users.sourceforge.net>
 Kurt Roeckx <kurt at roeckx.be>
 Miroslav Lichvar <mlichvar at redhat.com>
 Nikolaos Chatzikonstantinou <nchatz314 at gmail.com>
 Peter Wu <peter at lekensteyn.nl>
-Sam James <sam at gentoo.org>
 Samuel Zeter <samuelzeter at gmail.com>
 Stephan Mueller <smueller at chronox.de>
 Thierry Quemerais <tquemerais at awox.com>
@@ -112,7 +114,10 @@ Fabrice Fontaine <fontaine.fabrice at gmail.com>
 Giuseppe Scrivano <gscrivano at gnu.org>
 Hannes Reinecke <hare at suse.de>
 Ilya Tumaykin <itumaykin at gmail.com>
+Jan Palus <jpalus at fastmail.com>
 Jeff Mattson <jmattson at sei.cmu.edu>
+Joachim Vandersmissen <git at jvdsn.com>
+Joshua Rogers <joshua at joshua.hu>
 Karl Tarbe <karl.tarbe at cyber.ee>
 Karthik Das <kartheekdasari1998 at gmail.com>
 Ke Zhao <kzhao at redhat.com>
@@ -165,6 +170,7 @@ Daniel Schaefer <git at danielschaefer.me>
 David Walker <david.walker at vcatechnology.com>
 David Weber <dave at veryflatcat.com>
 Dimitris Apostolou <dimitris.apostolou at icloud.com>
+Dmitrichenko Mikhail <m.dmitrichenko222 at gmail.com>
 Dmitriy Tsvettsikh <dmitrycvet at gmail.com>
 Doekin <Leetimemp at gmail.com>
 Dosenpfand <m at sad.bz>
@@ -176,16 +182,17 @@ Elta Koepp <elta_koepp at gmail.com>
 Frank Morgner <morgner at informatik.hu-berlin.de>
 Frediano Ziglio <freddy77 at gmail.com>
 Gregor Jasny <gjasny at googlemail.com>
+Guillaume Gardet <guillaume.gardet at arm.com>
 Günther Deschner <gd at samba.org>
 Hani Benhabiles <kroosec at gmail.com>
 Hans Leidekker <hans at codeweavers.com>
 Ilya V. Matveychikov <i.matveychikov at securitycode.ru>
-Jan Palus <jpalus at fastmail.com>
 Jared Wong <jaredlwong at gmail.com>
 Jason Spafford <nullprogrammer at gmail.com>
 Jay Foad <jay.foad at gmail.com>
 Jeffrey Walton <noloader at gmail.com>
 Jens Lechtenboerger <jens.lechtenboerger at fsfe.org>
+Julien Olivain <ju.o at free.fr>
 Jussi Kukkonen <jussi.kukkonen at intel.com>
 Kai Pastor <dg0yt at darc.de>
 Kenneth J. Miller <ken at miller.ec>
@@ -203,6 +210,7 @@ Marcus Meissner <meissner at suse.de>
 Marga Manterola <marga at google.com>
 Marius Bakke <mbakke at fastmail.com>
 Mark Harfouche <mark.harfouche at gmail.com>
+Markus Theil <theil.markus at gmail.com>
 Marti Raudsepp <marti at juffo.org>
 Marvin Scholz <epirat07 at gmail.com>
 Matt Turner <mattst88 at gmail.com>
@@ -234,8 +242,11 @@ Richard W.M. Jones <rjones at redhat.com>
 Rickard Bellgrim <rickard at opendnssec.org>
 Robert Scheck <robert at fedoraproject.org>
 Roberto Newmon <robertonewmon at fake-box.com>
+Romain Tartière <romain at blogreen.org>
+Ross Burton <ross.burton at arm.com>
 Ross Nicholson <phunkyfish at gmail.com>
 Rowan Thorpe <rowan at rowanthorpe.com>
+Rudi Heitbaum <rudi at heitbaum.com>
 SUMIT AGGARWAL <aggarwal.s at samsung.com>
 Sadie Powell <sadie at witchery.services>
 Saurav Babu <saurav.babu at samsung.com>
@@ -258,6 +269,7 @@ ihsinme <ihsinme at gmail.com>
 pohsingwu <pohsingwu at synology.com>
 rrivers2 <5981058-rrivers2 at users.noreply.gitlab.com>
 sskaje <sskaje at gmail.com>
+xinpeng.wang <wangxinpeng at uniontech.com>
 Łukasz Stelmach <stlman at poczta.fm>
 
 
