@@ -49,14 +49,14 @@
 extern "C" {
 #endif
 
-#define GNUTLS_VERSION "3.8.11"
+#define GNUTLS_VERSION "3.8.13"
 
 /* clang-format off */
 #define GNUTLS_VERSION_MAJOR 3
 #define GNUTLS_VERSION_MINOR 8
-#define GNUTLS_VERSION_PATCH 11
+#define GNUTLS_VERSION_PATCH 13
 
-#define GNUTLS_VERSION_NUMBER 0x03080b
+#define GNUTLS_VERSION_NUMBER 0x03080d
 /* clang-format on */
 
 #define GNUTLS_CIPHER_RIJNDAEL_128_CBC GNUTLS_CIPHER_AES_128_CBC
@@ -2699,6 +2699,7 @@ void gnutls_psk_set_server_params_function(gnutls_psk_server_credentials_t res,
  * @GNUTLS_SAN_OTHERNAME_XMPP: Virtual SAN, used by certain functions for convenience.
  * @GNUTLS_SAN_OTHERNAME_KRB5PRINCIPAL: Virtual SAN, used by certain functions for convenience.
  * @GNUTLS_SAN_OTHERNAME_MSUSERPRINCIPAL: Virtual SAN, used by certain functions for convenience.
+ * @GNUTLS_SAN_OTHERNAME_SRV: Virtual SAN, used by certain functions for convenience.
  *
  * Enumeration of different subject alternative names types.
  */
@@ -2716,7 +2717,8 @@ typedef enum gnutls_x509_subject_alt_name_t {
 	   Used by gnutls_x509_crt_get_subject_alt_othername_oid.  */
 	GNUTLS_SAN_OTHERNAME_XMPP = 1000,
 	GNUTLS_SAN_OTHERNAME_KRB5PRINCIPAL,
-	GNUTLS_SAN_OTHERNAME_MSUSERPRINCIPAL
+	GNUTLS_SAN_OTHERNAME_MSUSERPRINCIPAL,
+	GNUTLS_SAN_OTHERNAME_SRV
 } gnutls_x509_subject_alt_name_t;
 
 struct gnutls_openpgp_crt_int;

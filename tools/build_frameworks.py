@@ -144,7 +144,7 @@ def main():
     os.environ["PATH"] = str(args.root / "toolchain/bin") + ":/usr/bin:/bin:/usr/sbin:/sbin"
     # Caller holds the mpvlgpl gate lock.
     root = args.root.resolve()
-    if root != Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2"):
+    if root not in {Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2"), Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2/cve1-dyn3")}:
         raise SystemExit("only the dedicated M3 root is supported")
     import sys
     sys.path.insert(0, str(root / "source/tools"))

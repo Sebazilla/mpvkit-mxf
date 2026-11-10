@@ -43,7 +43,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			otFhLpiot5y8xo3ZfQxfZG5xPmAuYy288x6m8grW5nE=
+			rUUB93RYHj32JmeEWygKFogTUl9dchtv7PoDIvK1Jl8=
 			</data>
 		</dict>
 		<key>Headers/gnutlsxx.h</key>
@@ -51,6 +51,13 @@
 			<key>hash2</key>
 			<data>
 			ewi5j1xWQ1/7jRZHgtm1XJivjskJ9RNssxvr6qvdwkc=
+			</data>
+		</dict>
+		<key>Headers/hpke.h</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			YUPApr6tiYGc9fKmv+hWpg35eLXqG0fM66L73261jtI=
 			</data>
 		</dict>
 		<key>Headers/ocsp.h</key>
@@ -71,7 +78,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			1UJZkHq8GSC3TEL6+yEMPrDXK73b3DSwwu6wB9v6KmU=
+			DLGJ8WgOj43jv8Miq4kV6KFV361dp5mwaneY3kQ1YLA=
 			</data>
 		</dict>
 		<key>Headers/pkcs12.h</key>

@@ -35,7 +35,7 @@ def main():
     args = p.parse_args()
     # Caller holds the mpvlgpl gate lock.
     root = args.root.resolve()
-    if root != Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2"):
+    if root not in {Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2"), Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2/cve1-dyn3")}:
         raise SystemExit("only the dedicated M3 root is allowed")
     import sys
     sys.path.insert(0, str(root / "source/tools"))
@@ -59,7 +59,8 @@ def main():
     text = video.read_text()
     text = text.replace("kCVPixelBufferOpenGLESCompatibilityKey", "kCVPixelBufferMetalCompatibilityKey")
     text = text.replace("kCVPixelBufferIOSurfaceOpenGLTextureCompatibilityKey", "kCVPixelBufferMetalCompatibilityKey")
-    video.write_text(text)
+    if video.read_text() != text:
+        video.write_text(text)
     archive = root / "downloads/MoltenVK-all.zip"
     if not archive.exists():
         validate(SDK_URL)
@@ -120,10 +121,10 @@ def main():
             f"prefix={prefix}\nName: {name}\nDescription: pinned original MPVKit input\nVersion: {version}\n"
             f"Libs: {libs}\nLibs.private: {private}\nCflags: -I{includes} {cflags}\nRequires.private: {requires}\n")
 
-    package("freetype2", "2.12.1", static("Libfreetype"), f"-I{includes}/freetype2", private="-lz -lbz2 -framework CoreServices")
-    package("harfbuzz", "8.1.1", static("Libharfbuzz"), f"-I{includes}/harfbuzz", private="-lc++")
-    package("fribidi", "1.0.12", dynamic("Libfribidi"), f"-I{includes}/fribidi")
-    package("libass", "0.17.4", static("Libass") + " " + static("Libunibreak"), requires="freetype2 harfbuzz fribidi", private="-liconv -framework CoreText -framework CoreFoundation")
+    package("freetype2", "2.14.3", static("Libfreetype"), f"-I{includes}/freetype2", private="-lz -lbz2 -framework CoreServices")
+    package("harfbuzz", "14.2.0", static("Libharfbuzz"), f"-I{includes}/harfbuzz", private="-lc++")
+    package("fribidi", "1.0.16", dynamic("Libfribidi"), f"-I{includes}/fribidi")
+    package("libass", "0.17.5", static("Libass") + " " + static("Libunibreak"), requires="freetype2 harfbuzz fribidi", private="-liconv -framework CoreText -framework CoreFoundation")
     package("vulkan", "1.4.334", dynamic("MoltenVK"), private="-lc++ -framework CoreFoundation -framework CoreGraphics -framework Foundation -framework IOSurface -framework Metal -framework QuartzCore -framework Cocoa -framework IOKit")
     package("shaderc", "2025.5.0", static("Libshaderc_combined"), private="-lc++")
     package("lcms2", "2.17.0", static("lcms2"))
