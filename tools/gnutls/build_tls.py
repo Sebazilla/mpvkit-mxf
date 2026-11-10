@@ -76,7 +76,7 @@ def main():
     args = parser.parse_args()
     # Caller holds the mpvlgpl gate lock.
     root = args.root.resolve()
-    if root not in {Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2"), Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2/cve1-dyn3")}:
+    if root not in {Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2"), Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2/cve1-dyn3"), Path("/Volumes/4M2/Dev/rushdeck/tmp/cve2/dyn4"), Path("/Volumes/4M2/Dev/rushdeck/tmp/cve2/dyn4-final")}:
         raise SystemExit("build root must be inside the dedicated M3 fork directory")
     import sys
     sys.path.insert(0, str(root / "source/tools"))

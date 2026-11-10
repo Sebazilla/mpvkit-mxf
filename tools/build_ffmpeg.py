@@ -35,7 +35,7 @@ def main():
     args = p.parse_args()
     # Caller holds the mpvlgpl gate lock.
     root = args.root.resolve()
-    if root not in {Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2"), Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2/cve1-dyn3")}:
+    if root not in {Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2"), Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2/cve1-dyn3"), Path("/Volumes/4M2/Dev/rushdeck/tmp/cve2/dyn4"), Path("/Volumes/4M2/Dev/rushdeck/tmp/cve2/dyn4-final")}:
         raise SystemExit("only the dedicated M3 root is allowed")
     import sys
     sys.path.insert(0, str(root / "source/tools"))
@@ -47,13 +47,17 @@ def main():
         if sha(input_binary(args.artifacts, name)) != expected:
             raise SystemExit("original input hash differs: " + name)
     source = root / "ffmpeg-source"
-    if subprocess.check_output(["git", "-C", str(source), "rev-parse", "HEAD"], text=True).strip() != "9047fa1b084f76b1b4d065af2d743df1b40dfb56":
-        raise SystemExit("wrong FFmpeg source revision")
-    patch = subprocess.check_output(["git", "-C", str(source), "diff", "--no-ext-diff", "--no-textconv", "--full-index", "--binary", "HEAD"])
-    if hashlib.sha256(patch).hexdigest() != "79feb56d1e3f999d1d5ad1f90dcf36fbcb9b41e452c8e4a55ac6c1507df77b17":
-        raise SystemExit("unexpected FFmpeg patch")
-    if subprocess.check_output(["git", "-C", str(source), "ls-files", "--others", "--exclude-standard"]):
-        raise SystemExit("untracked FFmpeg input")
+    if root.name in {"dyn4", "dyn4-final"}:
+        from verify_cve2 import verify_sources
+        verify_sources(root)
+    else:
+        if subprocess.check_output(["git", "-C", str(source), "rev-parse", "HEAD"], text=True).strip() != "9047fa1b084f76b1b4d065af2d743df1b40dfb56":
+            raise SystemExit("wrong FFmpeg source revision")
+        patch = subprocess.check_output(["git", "-C", str(source), "diff", "--no-ext-diff", "--no-textconv", "--full-index", "--binary", "HEAD"])
+        if hashlib.sha256(patch).hexdigest() != "79feb56d1e3f999d1d5ad1f90dcf36fbcb9b41e452c8e4a55ac6c1507df77b17":
+            raise SystemExit("unexpected FFmpeg patch")
+        if subprocess.check_output(["git", "-C", str(source), "ls-files", "--others", "--exclude-standard"]):
+            raise SystemExit("untracked FFmpeg input")
     # Same two macOS substitutions as the original fork build recipe.
     video = source / "libavcodec/videotoolbox.c"
     text = video.read_text()
@@ -100,10 +104,10 @@ def main():
         if not destination.exists():
             destination.symlink_to(target, target_is_directory=True)
 
-    link("libplacebo", headers("Libplacebo"))
+    link("libplacebo", root / "placebo-prefix" / args.arch / "include/libplacebo" if root.name in {"dyn4", "dyn4-final"} else headers("Libplacebo"))
     for dirname, component in [("ass", "Libass"), ("freetype2", "Libfreetype"), ("harfbuzz", "Libharfbuzz"),
                                ("fribidi", "Libfribidi"), ("dav1d", "Libdav1d"), ("shaderc", "Libshaderc_combined")]:
-        link(dirname, headers(component) / dirname)
+        link(dirname, root / "harfbuzz-prefix" / args.arch / "include/harfbuzz" if component == "Libharfbuzz" and root.name in {"dyn4", "dyn4-final"} else headers(component) / dirname)
     for dirname in ["vulkan", "vk_video", "MoltenVK"]:
         if (sdk_root / "include" / dirname).exists():
             link(dirname, sdk_root / "include" / dirname)
@@ -111,24 +115,30 @@ def main():
         link(filename, headers(component) / filename)
 
     def static(name):
-        return str(input_binary(args.artifacts, name))
+        return str(root / "harfbuzz-prefix" / args.arch / "lib/libharfbuzz.a") if name == "Libharfbuzz" and root.name in {"dyn4", "dyn4-final"} else str(input_binary(args.artifacts, name))
 
     def dynamic(name):
         return f"-F{stage} -framework {name}"
 
     def package(name, version, libs, cflags="", requires="", private=""):
         (pc / (name + ".pc")).write_text(
-            f"prefix={prefix}\nName: {name}\nDescription: pinned original MPVKit input\nVersion: {version}\n"
+            f"prefix={prefix}\nincludedir={includes}\nName: {name}\nDescription: pinned original MPVKit input\nVersion: {version}\n"
             f"Libs: {libs}\nLibs.private: {private}\nCflags: -I{includes} {cflags}\nRequires.private: {requires}\n")
 
     package("freetype2", "2.14.3", static("Libfreetype"), f"-I{includes}/freetype2", private="-lz -lbz2 -framework CoreServices")
-    package("harfbuzz", "14.2.0", static("Libharfbuzz"), f"-I{includes}/harfbuzz", private="-lc++")
+    package("harfbuzz", "15.0.0" if root.name in {"dyn4", "dyn4-final"} else "14.2.0", static("Libharfbuzz"), f"-I{includes}/harfbuzz", private="-lc++")
     package("fribidi", "1.0.16", dynamic("Libfribidi"), f"-I{includes}/fribidi")
     package("libass", "0.17.5", static("Libass") + " " + static("Libunibreak"), requires="freetype2 harfbuzz fribidi", private="-liconv -framework CoreText -framework CoreFoundation")
     package("vulkan", "1.4.334", dynamic("MoltenVK"), private="-lc++ -framework CoreFoundation -framework CoreGraphics -framework Foundation -framework IOSurface -framework Metal -framework QuartzCore -framework Cocoa -framework IOKit")
     package("shaderc", "2025.5.0", static("Libshaderc_combined"), private="-lc++")
     package("lcms2", "2.17.0", static("lcms2"))
-    package("libplacebo", "7.360.1", dynamic("Libplacebo"))
+    package("libplacebo", "7.387.0" if root.name in {"dyn4", "dyn4-final"} else "7.360.1", dynamic("Libplacebo"))
+    if root.name in {"dyn4", "dyn4-final"}:
+        generated = (root / "placebo-prefix" / args.arch / "lib/pkgconfig/libplacebo.pc").read_text()
+        generated = re.sub(r"^Libs:.*$", "Libs: " + dynamic("Libplacebo"), generated, flags=re.M)
+        (pc / "libplacebo.pc").write_text(generated)
+        (pc / "dovi.pc").write_bytes((root / "placebo-pc" / args.arch / "dovi.pc").read_bytes())
+
     package("dav1d", "1.5.2", static("Libdav1d"))
     package("uavs3d", "1.2.1", static("Libuavs3d"))
     xml_header = Path(sdk) / "usr/include/libxml2/libxml/xmlversion.h"

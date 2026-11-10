@@ -1,0 +1,85 @@
+[
+  {
+    "name": "ffmpeg-8.1.3.tar.xz",
+    "url": "https://ffmpeg.org/releases/ffmpeg-8.1.3.tar.xz",
+    "bytes": 11732036,
+    "sha256": "7138d28c96d9d3e3af4ee3d8cad72741f8ffb40da90c1112235dea3ecd3178a3",
+    "target": "upstream/ffmpeg-8.1.3",
+    "patched": {
+      "libavcodec/videotoolbox.c": "8d8c229a736e56785482cc9643148532dbc70c670c3699a47f73b8b929e13e58"
+    }
+  },
+  {
+    "name": "mpv-0.42.0.tar.gz",
+    "url": "https://github.com/mpv-player/mpv/archive/refs/tags/v0.42.0.tar.gz",
+    "bytes": 7515468,
+    "sha256": "bcfebbfa2b65a6d88dc97ea18117831072373e38b5785a2afb874ed4df5070dd",
+    "target": "upstream/mpv-0.42.0",
+    "patched": {
+      "meson.build": "19be9389537ed6e906356270431dc335a42b6cb2d17f78cfe1be828330ede2be",
+      "meson.options": "ae761606351cf5084fae948c6a7b2d1118b6843b3334ebc5ba6ee34169956b36",
+      "video/out/gpu/context.c": "8cc83ed54dd19e13ee1129700571016a56077b630c5c158c64f9137b898663b4",
+      "video/out/vulkan/common.h": "1e8577b944eeb1a35f334c369241f62d407340ddc249ec3080d9092307a3d42e",
+      "osdep/mac/meson.build": "c23b78b9d083efb99bb853e0ef28fcb08f76dc00db5a6ecd6dda8571a0e1d73a"
+    },
+    "added": {
+      "video/out/vulkan/context_moltenvk.m": "1b12bc4fc75de41be5f7a08ecb15c816ea19f2c582f4c9b61d292e34373aa40b"
+    }
+  },
+  {
+    "name": "libplacebo-v7.387.0.tar.gz",
+    "url": "https://github.com/haasn/libplacebo/archive/refs/tags/v7.387.0.tar.gz",
+    "bytes": 972798,
+    "sha256": "f9e62d3774a9c4cfd198ec3abaa88294aaade2e31c04d5ab02bcf4abc98b1df5",
+    "target": "upstream/libplacebo-7.387.0"
+  },
+  {
+    "name": "harfbuzz-15.0.0.tar.xz",
+    "url": "https://github.com/harfbuzz/harfbuzz/releases/download/15.0.0/harfbuzz-15.0.0.tar.xz",
+    "bytes": 20396372,
+    "sha256": "968536e9abd782f07f7954044c0c4020199fcdd39b41d221ec42d2a3be4a44df",
+    "target": "upstream/harfbuzz-15.0.0"
+  },
+  {
+    "name": "KhronosGroup-Vulkan-Headers-74d8a6cb930c68ef617b202c3ff3c59d919e086b.tar.gz",
+    "sha256": "75967a8288ff16044a86d1af462b96d2e75c435937efb75f2bb4102ab0382f29",
+    "url": "https://github.com/KhronosGroup/Vulkan-Headers/archive/74d8a6cb930c68ef617b202c3ff3c59d919e086b.tar.gz",
+    "revision": "74d8a6cb930c68ef617b202c3ff3c59d919e086b",
+    "target": "upstream/libplacebo-7.387.0/3rdparty/Vulkan-Headers"
+  },
+  {
+    "name": "fastfloat-fast_float-97b54ca9e75f5303507699d27c6b4f4efe4641a1.tar.gz",
+    "sha256": "2b132274539286e41f37857cac22aa8441d21bd86d55de825a3342b149f66801",
+    "url": "https://github.com/fastfloat/fast_float/archive/97b54ca9e75f5303507699d27c6b4f4efe4641a1.tar.gz",
+    "revision": "97b54ca9e75f5303507699d27c6b4f4efe4641a1",
+    "target": "upstream/libplacebo-7.387.0/3rdparty/fast_float"
+  },
+  {
+    "name": "Dav1dde-glad-73db193f853e2ee079bf3ca8a64aa2eaf6459043.tar.gz",
+    "sha256": "33dbeae44d8315ece57e14eba4b1b4a02ac5406d1c4f49cd20048c91522a6b9a",
+    "url": "https://github.com/Dav1dde/glad/archive/73db193f853e2ee079bf3ca8a64aa2eaf6459043.tar.gz",
+    "revision": "73db193f853e2ee079bf3ca8a64aa2eaf6459043",
+    "target": "upstream/libplacebo-7.387.0/3rdparty/glad"
+  },
+  {
+    "name": "pallets-jinja-15206881c006c79667fe5154fe80c01c65410679.tar.gz",
+    "sha256": "b88a20dcc2e34072fcf4159325bc6c34cd4b29a81a8b83d15d2f28ba561da296",
+    "url": "https://github.com/pallets/jinja/archive/15206881c006c79667fe5154fe80c01c65410679.tar.gz",
+    "revision": "15206881c006c79667fe5154fe80c01c65410679",
+    "target": "upstream/libplacebo-7.387.0/3rdparty/jinja"
+  },
+  {
+    "name": "pallets-markupsafe-297fc8e356e6836a62087949245d09a28e9f1b13.tar.gz",
+    "sha256": "da7c010c9c81a66ac73036558c1fcb6212b50482f43211cd1254035b94f82414",
+    "url": "https://github.com/pallets/markupsafe/archive/297fc8e356e6836a62087949245d09a28e9f1b13.tar.gz",
+    "revision": "297fc8e356e6836a62087949245d09a28e9f1b13",
+    "target": "upstream/libplacebo-7.387.0/3rdparty/markupsafe"
+  },
+  {
+    "name": "Immediate-Mode-UI-Nuklear-242f35efa067a46c595645eeda7b1771ea1f83b1.tar.gz",
+    "sha256": "ac567995f917c10a722409e0141d226e737d06488b0a31166f6e4925da8e58f0",
+    "url": "https://github.com/Immediate-Mode-UI/Nuklear/archive/242f35efa067a46c595645eeda7b1771ea1f83b1.tar.gz",
+    "revision": "242f35efa067a46c595645eeda7b1771ea1f83b1",
+    "target": "upstream/libplacebo-7.387.0/demos/3rdparty/nuklear"
+  }
+]

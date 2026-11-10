@@ -30,7 +30,7 @@ SYSTEM = ["AVFoundation", "CoreAudio", "AudioToolbox", "CoreVideo", "CoreFoundat
 
 
 SOURCE_LIBS = {"gmp": "libgmp", "nettle": "libnettle", "hogweed": "libhogweed", "gnutls": "libgnutls",
-               "Libudfread": "libudfread", "Libavutil": "libavutil", "Libavcodec": "libavcodec", "Libavformat": "libavformat",
+               "Libplacebo": "libplacebo", "Libmpv": "libmpv", "Libudfread": "libudfread", "Libavutil": "libavutil", "Libavcodec": "libavcodec", "Libavformat": "libavformat",
                "Libavfilter": "libavfilter", "Libavdevice": "libavdevice", "Libswresample": "libswresample", "Libswscale": "libswscale"}
 
 
@@ -137,6 +137,7 @@ def main():
     p.add_argument("--arch", choices=["arm64", "x86_64"], default="arm64")
     p.add_argument("--combine", action="store_true")
     p.add_argument("--foundation-only", action="store_true")
+    p.add_argument("--base-foundations-only", action="store_true", help="fresh foundations before source-built libplacebo")
     p.add_argument("--resume", action="store_true")
     p.add_argument("--refresh-foundations", action="store_true")
     p.add_argument("--repeat-stage", action="store_true", help="fresh independent framework reproduction")
@@ -144,12 +145,15 @@ def main():
     os.environ["PATH"] = str(args.root / "toolchain/bin") + ":/usr/bin:/bin:/usr/sbin:/sbin"
     # Caller holds the mpvlgpl gate lock.
     root = args.root.resolve()
-    if root not in {Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2"), Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2/cve1-dyn3")}:
+    if root not in {Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2"), Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2/cve1-dyn3"), Path("/Volumes/4M2/Dev/rushdeck/tmp/cve2/dyn4"), Path("/Volumes/4M2/Dev/rushdeck/tmp/cve2/dyn4-final")}:
         raise SystemExit("only the dedicated M3 root is supported")
     import sys
     sys.path.insert(0, str(root / "source/tools"))
     from gnutls.verify_inputs import verify
     verify(root)
+    if root.name not in {"dyn4", "dyn4-final"}:
+        SOURCE_LIBS.pop("Libplacebo", None)
+        SOURCE_LIBS.pop("Libmpv", None)
     fork = root / "source"
     manifest_path = fork / "tools" / "dynamic-inputs.json"
     inputs = {n: sha(input_binary(args.artifacts, n)) for n in DYNAMIC + PERMISSIVE}
@@ -176,7 +180,8 @@ def main():
     output = root / ("framework-repeat-stage" if args.repeat_stage else "framework-stage") / args.arch
     output.mkdir(parents=True, exist_ok=True)
     completed = []
-    for name in (DYNAMIC[:10] if args.foundation_only else DYNAMIC):
+    selected = DYNAMIC[:9] if args.base_foundations_only else DYNAMIC[:10] if args.foundation_only else DYNAMIC
+    for name in selected:
         target = output / f"{name}.framework"
         if target.exists():
             if not args.resume:
@@ -222,6 +227,14 @@ def main():
                 entry.symlink_to("Versions/Current/" + directory)
         info = version / "Resources/Info.plist"
         metadata = plistlib.loads(info.read_bytes())
+        if root.name in {"dyn4", "dyn4-final"}:
+            version_map = {"Libmpv": "0.42.0", "Libplacebo": "7.387.0", "gnutls": "3.8.13"}
+            if name in version_map:
+                metadata["CFBundleShortVersionString"] = version_map[name]
+                metadata["CFBundleVersion"] = version_map[name]
+            elif name in {"Libavutil", "Libavcodec", "Libavformat", "Libavfilter", "Libavdevice", "Libswresample", "Libswscale"}:
+                metadata["CFBundleShortVersionString"] = "8.1.3"
+                metadata["CFBundleVersion"] = "8.1.3"
         metadata["MinimumOSVersion"] = "11.0"
         metadata["LSMinimumSystemVersion"] = "11.0"
         info.write_bytes(plistlib.dumps(metadata))
@@ -230,9 +243,15 @@ def main():
         if name in SOURCE_LIBS:
             if name == "Libudfread":
                 build_udfread(root, args.arch)
-            shutil.copyfile(shared_binary(root / "prefix" / args.arch, name), binary)
+            source_prefix = root / ("placebo-prefix" if name == "Libplacebo" else "mpv-prefix" if name == "Libmpv" else "prefix") / args.arch
+            shutil.copyfile(shared_binary(source_prefix, name), binary)
+            if name == "Libplacebo":
+                shutil.copytree(source_prefix / "include/libplacebo", target / "Headers", dirs_exist_ok=True)
+            elif name == "Libmpv":
+                shutil.copytree(source_prefix / "include/mpv", target / "Headers/mpv", dirs_exist_ok=True)
             prefix = root / "prefix" / args.arch
             if name.startswith("Libav") or name in {"Libswscale", "Libswresample"}:
+                shutil.copytree(prefix / "include" / SOURCE_LIBS[name], target / "Headers", dirs_exist_ok=True)
                 shutil.copyfile(root / "ffmpeg-build" / args.arch / "config.h", target / "Headers/config.h")
                 if name == "Libavutil":
                     shutil.copyfile(root / "ffmpeg-build" / args.arch / "libavutil/ffversion.h", target / "Headers/ffversion.h")
@@ -250,7 +269,7 @@ def main():
                        "-Wl,-force_load," + str(own_archive), "-F" + str(output)]
             for dep in completed:
                 command += ["-framework", dep]
-            command += [str(input_binary(args.artifacts, dep)) for dep in PERMISSIVE]
+            command += [str(root / "harfbuzz-prefix" / args.arch / "lib/libharfbuzz.a") if dep == "Libharfbuzz" and root.name in {"dyn4", "dyn4-final"} else str(input_binary(args.artifacts, dep)) for dep in PERMISSIVE]
             for system in SYSTEM:
                 command += ["-framework", system]
             swift_lib = subprocess.check_output(["/usr/bin/xcrun", "--find", "swiftc"], text=True).strip()
@@ -265,7 +284,7 @@ def main():
         # Force-sign only the new output below.
         run(["/usr/bin/codesign", "--force", "--sign", "-", str(target)])
         completed.append(name)
-    print("dynamic frameworks bytes", sum((output / f"{n}.framework" / n).stat().st_size for n in (DYNAMIC[:10] if args.foundation_only else DYNAMIC)))
+    print("dynamic frameworks bytes", sum((output / f"{n}.framework" / n).stat().st_size for n in selected))
 
 
 if __name__ == "__main__":
