@@ -198,3 +198,80 @@ on both architectures. The generated feature/component lists match the old
 build. An arm64 synthetic MP4/MXF decode digest comparison gives identical
 video/audio bytes, frame counts and sample counts. This is not an x86_64 runtime
 claim or a portable bit-reproducibility guarantee across different Xcode versions.
+
+
+## WP-CVE1: 0.41.0-mxf-dyn3
+
+This additive tag removes unused Libssl/Libcrypto declarations from both
+FFmpeg wrapper graphs and updates the TLS/text-library inputs. Historical tags
+and their build outputs are retained. The selected product remains MPVKit.
+
+The isolated build root is `/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2/cve1-dyn3`.
+Its source/ points at this dedicated fork checkout; toolchain, the unchanged
+patched FFmpeg n8.1 source, and the verified MoltenVK SDK are retained inputs.
+It has fresh prefix/, tls-build/, ffmpeg-build/, framework-stage/ and
+archive-split/ outputs. The drivers accept this exact additional build root;
+no old build output is reused as a completed new build. Source ZIPs and tarballs
+are verified before every driver, including extracted members and symlinks.
+
+GnuTLS 3.8.13 uses the official tarball at
+https://www.gnupg.org/ftp/gcrypt/gnutls/v3.8/gnutls-3.8.13.tar.xz
+(7,275,324 bytes), SHA256
+ffed8ec1bf09c2426d4f14aae377de4753b53e537d685e604e99a8b16ca9c97e.
+This is a download hash, cross-checked against the same-version Homebrew source
+formula. The original detached signature is saved but no GPG verification is
+claimed by the builder. GMP 6.2.1 and Nettle/Hogweed 3.10 retain the exact prior
+source hashes and configure options and are recompiled in the new TLS tree.
+
+The five original text-library ZIPs now come from mpvkit/libass-build 0.17.5.
+Their official *.checksum.txt files supply the original-assets.json checksums;
+fetch_inputs.py is the only ZIP downloader. dynamic-inputs.json binds the actual
+universal static archives, separately from the ZIP hashes. The shared macOS SDK
+headers of each universal arm64+x86_64 asset report libass 0.17.5, FreeType
+2.14.3, FriBidi 1.0.16, HarfBuzz 14.2.0, and libunibreak 6.1.
+
+FFmpeg's seven shared libraries are rebuilt from the unchanged n8.1 source and
+the exact previous two-substitution VideoToolbox patch, against these new text
+archives and TLS stack. Version metadata in the local pkg-config records follows
+the verified new header versions. Original per-architecture feature flags,
+--disable-nonfree/--disable-gpl/--enable-version3 and deployment targets remain.
+The other libraries are relinked from their verified PIC archives. FriBidi stays
+a separately replaceable framework; permissive text objects are static where
+referenced. All 18 frameworks are freshly staged for each architecture, combined
+and ad-hoc signed. Build commands from the earlier section apply with the new
+root and its verified-inputs directory; hold the mpvlgpl gate lock and use nice 10.
+
+Licenses/ includes the exact tagged upstream texts for the new versions and
+asset header copyrights. FreeType is used under FTL: Portions of this software
+are copyright The FreeType Project (https://freetype.org). All rights reserved.
+FreeType's BDF/PCF/fthash X11-style, gzip zlib, and HarfBuzz-derived Old MIT
+notices are preserved in freetype/SUPPLEMENTAL-NOTICES.txt, along with the full
+LICENSE.TXT and FTL.TXT. HarfBuzz COPYING and CVE1-TEXT-NOTICES.txt preserve its
+contributor and per-header copyrights. libass is ISC; libunibreak is zlib-style;
+FriBidi is LGPL-2.1-or-later. These technical records are not a blanket clearance
+of unexamined third-party source code.
+
+Before publishing: isolated swift package describe must omit Libssl/Libcrypto;
+all framework load commands and symbols must omit OpenSSL dependency/API names;
+new header/compiled-version evidence must replace the old text versions;
+synthetic MP4/MXF decode byte digests, frame/sample counts must match baseline;
+lgpl_check --release must pass against the probe bundle, and all 18 frameworks
+must contain and verify both architecture slices. More than 50 MB bundle growth
+or a feature/decode difference stops publication. The exact measured results
+and toolchain are recorded externally before this immutable tag is pushed.
+
+
+WP-CVE1 local validation (Xcode 26.6 / 17F113): all 18 universal frameworks
+verify both architecture slices and signatures. The arm64-normalized probe
+bundle is 270,493,771 bytes versus 269,966,228 baseline (+527,543 bytes);
+comparing a universal probe against an arm64 baseline is invalid. The probe
+passes lgpl_check --release and strict codesign. The graph and all inspected
+framework/main symbols and load commands omit OpenSSL dependencies/APIs.
+Native arm64 version APIs, with dladdr ownership: FreeType 2.14.3 in Libbluray,
+libass 0.17.5 and HarfBuzz 14.2.0 in Libmpv. Libavfilter contains the 0.17.5
+libass build string. No bounded old 2.12.1/0.17.4/8.1.1 version strings occur
+in any of the 18 frameworks on either architecture. The synthetic MP4 digest
+is eb23a57e434e813a (50 frames, 96,256 samples), MXF 87b00f15a00ec82f
+(50 frames, 96,000 samples), identical before/after, fixtures unchanged.
+These digests hash active decoded bytes using tools/decode_digest.c; x86_64
+has static build/inspection evidence, not a runtime claim.
