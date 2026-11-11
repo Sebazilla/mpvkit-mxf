@@ -14,7 +14,7 @@ else:
     from wait_for_m3 import wait
 
 SOURCES = {
-    "gmp-6.2.1": ("https://ftp.gnu.org/gnu/gmp/gmp-6.2.1.tar.xz", "fd4829912cddd12f84181c3451cc752be224643e87fac497b69edddadc49b4f2"),
+    "gmp-6.3.0": ("https://ftp.gnu.org/gnu/gmp/gmp-6.3.0.tar.xz", "a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898"),
     "nettle-3.10": ("https://ftp.gnu.org/gnu/nettle/nettle-3.10.tar.gz", "b4c518adb174e484cb4acea54118f02380c7133771e7e9beb98a0787194ee47c"),
     "gnutls-3.8.13": ("https://www.gnupg.org/ftp/gcrypt/gnutls/v3.8/gnutls-3.8.13.tar.xz", "ffed8ec1bf09c2426d4f14aae377de4753b53e537d685e604e99a8b16ca9c97e"),
 }
@@ -76,7 +76,7 @@ def main():
     args = parser.parse_args()
     # Caller holds the mpvlgpl gate lock.
     root = args.root.resolve()
-    if root not in {Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2"), Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2/cve1-dyn3"), Path("/Volumes/4M2/Dev/rushdeck/tmp/cve2/dyn4"), Path("/Volumes/4M2/Dev/rushdeck/tmp/cve2/dyn4-final")}:
+    if root not in {Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2"), Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2/cve1-dyn3"), Path("/Volumes/4M2/Dev/rushdeck/tmp/cve2/dyn4"), Path("/Volumes/4M2/Dev/rushdeck/tmp/cve2/dyn4-final"), Path("/Volumes/4M2/Dev/rushdeck/tmp/cve3/dyn5"), Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn5")}:
         raise SystemExit("build root must be inside the dedicated M3 fork directory")
     import sys
     sys.path.insert(0, str(root / "source/tools"))
@@ -94,7 +94,7 @@ def main():
                CPPFLAGS=f"{common} -I{prefix}/include", LDFLAGS=f"{common} -L{prefix}/lib",
                PKG_CONFIG_LIBDIR=f"{prefix}/lib/pkgconfig", PKG_CONFIG_PATH=f"{prefix}/lib/pkgconfig")
     configs = {
-        "gmp-6.2.1": ["--disable-assembly", "--with-pic", "--disable-fast-install"],
+        "gmp-6.3.0": ["--disable-assembly", "--with-pic", "--disable-fast-install"],
         "nettle-3.10": ["--disable-assembler", "--disable-openssl", "--disable-gcov", "--disable-documentation", "--enable-pic", "--disable-dependency-tracking"],
         "gnutls-3.8.13": ["--with-included-libtasn1", "--with-included-unistring", "--without-brotli", "--without-idn", "--without-p11-kit", "--without-zlib", "--without-zstd", "--enable-hardware-acceleration", "--disable-openssl-compatibility", "--disable-code-coverage", "--disable-doc", "--disable-gtk-doc", "--disable-maintainer-mode", "--disable-manpages", "--disable-nls", "--disable-rpath", "--disable-tests", "--disable-tools", "--disable-full-test-suite", "--with-pic", "--disable-fast-install", "--disable-dependency-tracking"],
     }

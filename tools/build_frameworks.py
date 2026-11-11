@@ -145,13 +145,13 @@ def main():
     os.environ["PATH"] = str(args.root / "toolchain/bin") + ":/usr/bin:/bin:/usr/sbin:/sbin"
     # Caller holds the mpvlgpl gate lock.
     root = args.root.resolve()
-    if root not in {Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2"), Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2/cve1-dyn3"), Path("/Volumes/4M2/Dev/rushdeck/tmp/cve2/dyn4"), Path("/Volumes/4M2/Dev/rushdeck/tmp/cve2/dyn4-final")}:
+    if root not in {Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2"), Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2/cve1-dyn3"), Path("/Volumes/4M2/Dev/rushdeck/tmp/cve2/dyn4"), Path("/Volumes/4M2/Dev/rushdeck/tmp/cve2/dyn4-final"), Path("/Volumes/4M2/Dev/rushdeck/tmp/cve3/dyn5"), Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn5")}:
         raise SystemExit("only the dedicated M3 root is supported")
     import sys
     sys.path.insert(0, str(root / "source/tools"))
     from gnutls.verify_inputs import verify
     verify(root)
-    if root.name not in {"dyn4", "dyn4-final"}:
+    if root.name not in {"dyn4", "dyn4-final", "dyn5", "mpvkit-dyn5"}:
         SOURCE_LIBS.pop("Libplacebo", None)
         SOURCE_LIBS.pop("Libmpv", None)
     fork = root / "source"
@@ -191,6 +191,13 @@ def main():
                 completed.append(name)
                 continue
             raise SystemExit("use a fresh stage; deletion prohibited")
+        if name == "MoltenVK" and root.name in {"dyn5", "mpvkit-dyn5"}:
+            # Immutable, hash-bound dyn4 input; this is an explicit takeover.
+            retained = root / "retained-frameworks" / args.arch / "MoltenVK.framework"
+            shutil.copytree(retained, target, symlinks=True)
+            run(["/usr/bin/codesign", "--verify", "--deep", "--strict", target])
+            completed.append(name)
+            continue
         if name in {"MoltenVK", "Libudfread"}:
             version = target / "Versions/A"
             (version / "Resources").mkdir(parents=True)
@@ -227,8 +234,8 @@ def main():
                 entry.symlink_to("Versions/Current/" + directory)
         info = version / "Resources/Info.plist"
         metadata = plistlib.loads(info.read_bytes())
-        if root.name in {"dyn4", "dyn4-final"}:
-            version_map = {"Libmpv": "0.42.0", "Libplacebo": "7.387.0", "gnutls": "3.8.13"}
+        if root.name in {"dyn4", "dyn4-final", "dyn5", "mpvkit-dyn5"}:
+            version_map = {"Libmpv": "0.42.0", "Libplacebo": "7.387.0", "gnutls": "3.8.13", "gmp": "6.3.0"}
             if name in version_map:
                 metadata["CFBundleShortVersionString"] = version_map[name]
                 metadata["CFBundleVersion"] = version_map[name]
@@ -269,7 +276,7 @@ def main():
                        "-Wl,-force_load," + str(own_archive), "-F" + str(output)]
             for dep in completed:
                 command += ["-framework", dep]
-            command += [str(root / "harfbuzz-prefix" / args.arch / "lib/libharfbuzz.a") if dep == "Libharfbuzz" and root.name in {"dyn4", "dyn4-final"} else str(input_binary(args.artifacts, dep)) for dep in PERMISSIVE]
+            command += [str(root / "harfbuzz-prefix" / args.arch / "lib/libharfbuzz.a") if dep == "Libharfbuzz" and root.name in {"dyn4", "dyn4-final", "dyn5", "mpvkit-dyn5"} else str(input_binary(args.artifacts, dep)) for dep in PERMISSIVE]
             for system in SYSTEM:
                 command += ["-framework", system]
             swift_lib = subprocess.check_output(["/usr/bin/xcrun", "--find", "swiftc"], text=True).strip()
