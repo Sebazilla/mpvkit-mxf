@@ -33,22 +33,22 @@ def main():
     p.add_argument("--arch", choices=["arm64", "x86_64"], default="arm64")
     p.add_argument("--repeat", action="store_true", help="fresh second build, no prefix install")
     args = p.parse_args()
-    # Caller holds the mpvlgpl gate lock.
+    # Serial library build: no RushDeck gate lock.
     root = args.root.resolve()
-    if root not in {Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2"), Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2/cve1-dyn3"), Path("/Volumes/4M2/Dev/rushdeck/tmp/cve2/dyn4"), Path("/Volumes/4M2/Dev/rushdeck/tmp/cve2/dyn4-final"), Path("/Volumes/4M2/Dev/rushdeck/tmp/cve3/dyn5"), Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn5")}:
+    if root not in {Path('/Volumes/4M2/Dev/rushdeck/tmp/fork6/round2-build'), Path('/Volumes/4M2/Dev/rushdeck/mpvkit-dyn6/round2')}:
         raise SystemExit("only the dedicated M3 root is allowed")
     import sys
     sys.path.insert(0, str(root / "source/tools"))
     from gnutls.verify_inputs import verify
-    verify(root)
+    verify(root, build=True)
     tools = root / "source/tools"
     manifest = json.loads((tools / "dynamic-inputs.json").read_text())
     for name, expected in manifest.items():
         if sha(input_binary(args.artifacts, name)) != expected:
             raise SystemExit("original input hash differs: " + name)
     source = root / "ffmpeg-source"
-    if root.name in {"dyn4", "dyn4-final", "dyn5", "mpvkit-dyn5"}:
-        if root.name in {"dyn5", "mpvkit-dyn5"}:
+    if True:
+        if True:
             from verify_cve3 import verify_sources
         else:
             from verify_cve2 import verify_sources
@@ -107,10 +107,10 @@ def main():
         if not destination.exists():
             destination.symlink_to(target, target_is_directory=True)
 
-    link("libplacebo", root / "placebo-prefix" / args.arch / "include/libplacebo" if root.name in {"dyn4", "dyn4-final", "dyn5", "mpvkit-dyn5"} else headers("Libplacebo"))
+    link("libplacebo", root / "placebo-prefix" / args.arch / "include/libplacebo" if True else headers("Libplacebo"))
     for dirname, component in [("ass", "Libass"), ("freetype2", "Libfreetype"), ("harfbuzz", "Libharfbuzz"),
                                ("fribidi", "Libfribidi"), ("dav1d", "Libdav1d"), ("shaderc", "Libshaderc_combined")]:
-        link(dirname, root / "harfbuzz-prefix" / args.arch / "include/harfbuzz" if component == "Libharfbuzz" and root.name in {"dyn4", "dyn4-final", "dyn5", "mpvkit-dyn5"} else headers(component) / dirname)
+        link(dirname, root / "harfbuzz-prefix" / args.arch / "include/harfbuzz" if component == "Libharfbuzz" and True else headers(component) / dirname)
     for dirname in ["vulkan", "vk_video", "MoltenVK"]:
         if (sdk_root / "include" / dirname).exists():
             link(dirname, sdk_root / "include" / dirname)
@@ -118,7 +118,7 @@ def main():
         link(filename, headers(component) / filename)
 
     def static(name):
-        return str(root / "harfbuzz-prefix" / args.arch / "lib/libharfbuzz.a") if name == "Libharfbuzz" and root.name in {"dyn4", "dyn4-final", "dyn5", "mpvkit-dyn5"} else str(input_binary(args.artifacts, name))
+        return str(root / "harfbuzz-prefix" / args.arch / "lib/libharfbuzz.a") if name == "Libharfbuzz" and True else str(input_binary(args.artifacts, name))
 
     def dynamic(name):
         return f"-F{stage} -framework {name}"
@@ -129,14 +129,14 @@ def main():
             f"Libs: {libs}\nLibs.private: {private}\nCflags: -I{includes} {cflags}\nRequires.private: {requires}\n")
 
     package("freetype2", "2.14.3", static("Libfreetype"), f"-I{includes}/freetype2", private="-lz -lbz2 -framework CoreServices")
-    package("harfbuzz", "15.0.0" if root.name in {"dyn4", "dyn4-final", "dyn5", "mpvkit-dyn5"} else "14.2.0", static("Libharfbuzz"), f"-I{includes}/harfbuzz", private="-lc++")
+    package("harfbuzz", "15.0.0" if True else "14.2.0", static("Libharfbuzz"), f"-I{includes}/harfbuzz", private="-lc++")
     package("fribidi", "1.0.16", dynamic("Libfribidi"), f"-I{includes}/fribidi")
     package("libass", "0.17.5", static("Libass") + " " + static("Libunibreak"), requires="freetype2 harfbuzz fribidi", private="-liconv -framework CoreText -framework CoreFoundation")
     package("vulkan", "1.4.334", dynamic("MoltenVK"), private="-lc++ -framework CoreFoundation -framework CoreGraphics -framework Foundation -framework IOSurface -framework Metal -framework QuartzCore -framework Cocoa -framework IOKit")
     package("shaderc", "2025.5.0", static("Libshaderc_combined"), private="-lc++")
     package("lcms2", "2.17.0", static("lcms2"))
-    package("libplacebo", "7.387.0" if root.name in {"dyn4", "dyn4-final", "dyn5", "mpvkit-dyn5"} else "7.360.1", dynamic("Libplacebo"))
-    if root.name in {"dyn4", "dyn4-final", "dyn5", "mpvkit-dyn5"}:
+    package("libplacebo", "7.387.0" if True else "7.360.1", dynamic("Libplacebo"))
+    if True:
         generated = (root / "placebo-prefix" / args.arch / "lib/pkgconfig/libplacebo.pc").read_text()
         generated = re.sub(r"^Libs:.*$", "Libs: " + dynamic("Libplacebo"), generated, flags=re.M)
         (pc / "libplacebo.pc").write_text(generated)
@@ -152,15 +152,16 @@ def main():
     flags = [x for x in original if not x.startswith("--prefix=") and x not in {"--disable-shared", "--enable-static", "--enable-nonfree"}]
     flags += ["--disable-nonfree", "--disable-gpl", f"--prefix={prefix}", "--enable-shared", "--disable-static", "--install-name-dir=@rpath",
               "--cc=/usr/bin/clang", "--cxx=/usr/bin/clang++",
-              f"--extra-cflags=-arch {args.arch} -isysroot {sdk} -target {args.arch}-apple-macos11.0 -mmacosx-version-min=11.0 -I{includes}",
-              f"--extra-ldflags=-arch {args.arch} -isysroot {sdk} -target {args.arch}-apple-macos11.0 -mmacosx-version-min=11.0 -L{prefix}/lib -F{stage} -lc++"]
+              f"--extra-cxxflags=-ffile-prefix-map={root}=.",
+              f"--extra-cflags=-ffile-prefix-map={root}=. -arch {args.arch} -isysroot {sdk} -target {args.arch}-apple-macos11.0 -mmacosx-version-min=11.0 -I{includes}",
+              f"--extra-ldflags=-Wl,-oso_prefix,{root}/ -arch {args.arch} -isysroot {sdk} -target {args.arch}-apple-macos11.0 -mmacosx-version-min=11.0 -L{prefix}/lib -F{stage} -lc++"]
     build = root / ("ffmpeg-repeat-build" if args.repeat else "ffmpeg-build") / args.arch
     build.mkdir(parents=True, exist_ok=True)
     (build / "configuration-delta.json").write_text(json.dumps({"original": original, "shared": flags}, indent=2) + "\n")
     env = dict(os.environ, PATH=f"{root}/toolchain/bin:/usr/bin:/bin:/usr/sbin:/sbin",
                PKG_CONFIG_LIBDIR=str(pc), PKG_CONFIG_PATH=str(pc) + ":" + str(root / "toolchain/sdl2/lib/pkgconfig"))
     run([source / "configure"] + flags, build, env)
-    run(["/usr/bin/make", "-j4"], build, env)
+    run(["/usr/bin/make", "-j2"], build, env)
     if not args.repeat:
         run(["/usr/bin/make", "install"], build, env)
     print("PASS FFmpeg shared source build", args.arch)

@@ -74,14 +74,14 @@ def main():
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--arch", choices=["arm64", "x86_64"], default="arm64")
     args = parser.parse_args()
-    # Caller holds the mpvlgpl gate lock.
+    # Serial library build: no RushDeck gate lock.
     root = args.root.resolve()
-    if root not in {Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2"), Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2/cve1-dyn3"), Path("/Volumes/4M2/Dev/rushdeck/tmp/cve2/dyn4"), Path("/Volumes/4M2/Dev/rushdeck/tmp/cve2/dyn4-final"), Path("/Volumes/4M2/Dev/rushdeck/tmp/cve3/dyn5"), Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn5")}:
+    if root not in {Path('/Volumes/4M2/Dev/rushdeck/tmp/fork6/round2-build'), Path('/Volumes/4M2/Dev/rushdeck/mpvkit-dyn6/round2')}:
         raise SystemExit("build root must be inside the dedicated M3 fork directory")
     import sys
     sys.path.insert(0, str(root / "source/tools"))
     from gnutls.verify_inputs import verify
-    verify(root)
+    verify(root, build=True)
     prefix = root / "prefix" / args.arch
     prefix.mkdir(parents=True, exist_ok=True)
     sdk = subprocess.check_output(["/usr/bin/xcrun", "--sdk", "macosx", "--show-sdk-path"], text=True).strip()
@@ -91,12 +91,12 @@ def main():
                CC="/usr/bin/clang", CXX="/usr/bin/clang++", LC_ALL="C",
                CFLAGS=common,
                CXXFLAGS=common,
-               CPPFLAGS=f"{common} -I{prefix}/include", LDFLAGS=f"{common} -L{prefix}/lib",
+               CPPFLAGS=f"-ffile-prefix-map={root}=. {common} -I{prefix}/include", LDFLAGS=f"{common} -Wl,-oso_prefix,{root}/ -L{prefix}/lib",
                PKG_CONFIG_LIBDIR=f"{prefix}/lib/pkgconfig", PKG_CONFIG_PATH=f"{prefix}/lib/pkgconfig")
     configs = {
         "gmp-6.3.0": ["--disable-assembly", "--with-pic", "--disable-fast-install"],
         "nettle-3.10": ["--disable-assembler", "--disable-openssl", "--disable-gcov", "--disable-documentation", "--enable-pic", "--disable-dependency-tracking"],
-        "gnutls-3.8.13": ["--with-included-libtasn1", "--with-included-unistring", "--without-brotli", "--without-idn", "--without-p11-kit", "--without-zlib", "--without-zstd", "--enable-hardware-acceleration", "--disable-openssl-compatibility", "--disable-code-coverage", "--disable-doc", "--disable-gtk-doc", "--disable-maintainer-mode", "--disable-manpages", "--disable-nls", "--disable-rpath", "--disable-tests", "--disable-tools", "--disable-full-test-suite", "--with-pic", "--disable-fast-install", "--disable-dependency-tracking"],
+        "gnutls-3.8.13": ["--with-system-priority-file=", "--sysconfdir=/System/Library/RushDeck-Disabled/etc", "--localedir=/System/Library/RushDeck-Disabled/locale", "--with-included-libtasn1", "--with-included-unistring", "--without-brotli", "--without-idn", "--without-p11-kit", "--without-zlib", "--without-zstd", "--enable-hardware-acceleration", "--disable-openssl-compatibility", "--disable-code-coverage", "--disable-doc", "--disable-gtk-doc", "--disable-maintainer-mode", "--disable-manpages", "--disable-nls", "--disable-rpath", "--disable-tests", "--disable-tools", "--disable-full-test-suite", "--with-pic", "--disable-fast-install", "--disable-dependency-tracking"],
     }
     for name, flags in configs.items():
         src = source(root, name)
@@ -110,7 +110,7 @@ def main():
                 raise SystemExit("TLS configuration changed: use a fresh tls-build directory for " + name)
             continue
         run(configuration, build, env)
-        run(["/usr/bin/make", "-j4"], build, env)
+        run(["/usr/bin/make", "-j2"], build, env)
         run(["/usr/bin/make", "install"], build, env)
         (build / "installed.ok").write_text(stamp)
 

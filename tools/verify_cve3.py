@@ -6,10 +6,10 @@ def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()
 
 def verify_sources(root):
  root=Path(root).resolve()
- if root not in {Path('/Volumes/4M2/Dev/rushdeck/tmp/cve3/dyn5'),Path('/Volumes/4M2/Dev/rushdeck/mpvkit-dyn5')}:raise SystemExit('wrong CVE3 root')
+ if root not in {Path('/Volumes/4M2/Dev/rushdeck/tmp/fork6/round2-build'), Path('/Volumes/4M2/Dev/rushdeck/mpvkit-dyn6/round2')}:raise SystemExit('wrong CVE3 root')
  records=json.loads((root/'source/tools/cve2-sources.json').read_text())
  for item in records:
-  a=Path('/Volumes/4M2/Dev/rushdeck/tmp/cve3/sources')/item['name']
+  a=(root/'downloads' if True else Path('/Volumes/4M2/Dev/rushdeck/tmp/cve3/sources'))/item['name']
   if sha(a)!=item['sha256']:raise SystemExit('CVE3 archive differs: '+item['name'])
   target=root/item['target'];allowed=set()
   with tarfile.open(a) as stream:

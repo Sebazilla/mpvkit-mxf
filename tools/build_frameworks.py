@@ -93,16 +93,16 @@ def build_udfread(root, arch):
     build = root / "udfread-build" / arch
     if (prefix / "lib/libudfread.3.dylib").is_file():
         return
-    # Caller holds the mpvlgpl gate lock.
+    # Serial library build: no RushDeck gate lock.
     sdk = subprocess.check_output(["/usr/bin/xcrun", "--sdk", "macosx", "--show-sdk-path"], text=True).strip()
     cross = root / ("udfread-" + arch + ".ini")
     cpu = "aarch64" if arch == "arm64" else "x86_64"
-    flags = ["-arch", arch, "-isysroot", sdk, "-target", arch + "-apple-macos11.0", "-mmacosx-version-min=11.0"]
+    flags = ["-ffile-prefix-map=" + str(root) + "=.", "-arch", arch, "-isysroot", sdk, "-target", arch + "-apple-macos11.0", "-mmacosx-version-min=11.0"]
     cross.write_text("[binaries]\nc = '/usr/bin/clang'\n[host_machine]\nsystem = 'darwin'\ncpu_family = '" + cpu + "'\ncpu = '" + cpu + "'\nendian = 'little'\n[properties]\nneeds_exe_wrapper = true\n[built-in options]\nc_args = " + repr(flags) + "\nc_link_args = " + repr(flags) + "\n")
     meson = str(root / "toolchain/bin/meson")
     run([meson, "setup", build, source, "--prefix=" + str(prefix), "--cross-file=" + str(cross),
          "--wrap-mode=nodownload", "--buildtype=release", "-Ddefault_library=shared", "-Dembed_udfread=false", "-Denable_examples=false"])
-    run([meson, "compile", "-C", build, "-j4"])
+    run([meson, "compile", "-C", build, "-j2"])
     run([meson, "install", "-C", build])
 
 
@@ -143,15 +143,15 @@ def main():
     p.add_argument("--repeat-stage", action="store_true", help="fresh independent framework reproduction")
     args = p.parse_args()
     os.environ["PATH"] = str(args.root / "toolchain/bin") + ":/usr/bin:/bin:/usr/sbin:/sbin"
-    # Caller holds the mpvlgpl gate lock.
+    # Serial library build: no RushDeck gate lock.
     root = args.root.resolve()
-    if root not in {Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2"), Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn2/cve1-dyn3"), Path("/Volumes/4M2/Dev/rushdeck/tmp/cve2/dyn4"), Path("/Volumes/4M2/Dev/rushdeck/tmp/cve2/dyn4-final"), Path("/Volumes/4M2/Dev/rushdeck/tmp/cve3/dyn5"), Path("/Volumes/4M2/Dev/rushdeck/mpvkit-dyn5")}:
+    if root not in {Path('/Volumes/4M2/Dev/rushdeck/tmp/fork6/round2-build'), Path('/Volumes/4M2/Dev/rushdeck/mpvkit-dyn6/round2')}:
         raise SystemExit("only the dedicated M3 root is supported")
     import sys
     sys.path.insert(0, str(root / "source/tools"))
     from gnutls.verify_inputs import verify
-    verify(root)
-    if root.name not in {"dyn4", "dyn4-final", "dyn5", "mpvkit-dyn5"}:
+    verify(root, build=os.environ.get("FORK6_RELINK") != "1")
+    if False:
         SOURCE_LIBS.pop("Libplacebo", None)
         SOURCE_LIBS.pop("Libmpv", None)
     fork = root / "source"
@@ -164,20 +164,20 @@ def main():
     if json.loads(manifest_path.read_text()) != inputs:
         raise SystemExit("input archive hashes differ from the recorded original artifacts")
     if args.combine:
-        combined = root / "framework-stage" / "universal"
+        combined = root / os.environ.get("FORK6_STAGE", "framework-stage") / "universal"
         combined.mkdir(parents=True, exist_ok=True)
         for name in DYNAMIC:
             target = combined / f"{name}.framework"
-            shutil.copytree(root / "framework-stage/arm64" / target.name, target, symlinks=True)
+            shutil.copytree(root / os.environ.get("FORK6_STAGE", "framework-stage") / "arm64" / target.name, target, symlinks=True)
             binary = (target / name).resolve()
-            run(["/usr/bin/lipo", "-create", root / "framework-stage/arm64" / target.name / name,
-                 root / "framework-stage/x86_64" / target.name / name, "-output", str(binary) + ".new"])
+            run(["/usr/bin/lipo", "-create", root / os.environ.get("FORK6_STAGE", "framework-stage") / "arm64" / target.name / name,
+                 root / os.environ.get("FORK6_STAGE", "framework-stage") / "x86_64" / target.name / name, "-output", str(binary) + ".new"])
             os.replace(str(binary) + ".new", binary)
             run(["/usr/bin/codesign", "--force", "--sign", "-", target])
             run(["/usr/bin/xcodebuild", "-create-xcframework", "-framework", target,
-                 "-output", fork / "Dynamic" / f"{name}.xcframework"])
+                 "-output", root / os.environ.get("FORK6_DYNAMIC", "candidate-Dynamic") / f"{name}.xcframework"])
         return
-    output = root / ("framework-repeat-stage" if args.repeat_stage else "framework-stage") / args.arch
+    output = root / ("framework-repeat-stage" if args.repeat_stage else os.environ.get("FORK6_STAGE", "framework-stage")) / args.arch
     output.mkdir(parents=True, exist_ok=True)
     completed = []
     selected = DYNAMIC[:9] if args.base_foundations_only else DYNAMIC[:10] if args.foundation_only else DYNAMIC
@@ -191,7 +191,7 @@ def main():
                 completed.append(name)
                 continue
             raise SystemExit("use a fresh stage; deletion prohibited")
-        if name == "MoltenVK" and root.name in {"dyn5", "mpvkit-dyn5"}:
+        if name == "MoltenVK" and True:
             # Immutable, hash-bound dyn4 input; this is an explicit takeover.
             retained = root / "retained-frameworks" / args.arch / "MoltenVK.framework"
             shutil.copytree(retained, target, symlinks=True)
@@ -234,7 +234,7 @@ def main():
                 entry.symlink_to("Versions/Current/" + directory)
         info = version / "Resources/Info.plist"
         metadata = plistlib.loads(info.read_bytes())
-        if root.name in {"dyn4", "dyn4-final", "dyn5", "mpvkit-dyn5"}:
+        if True:
             version_map = {"Libmpv": "0.42.0", "Libplacebo": "7.387.0", "gnutls": "3.8.13", "gmp": "6.3.0"}
             if name in version_map:
                 metadata["CFBundleShortVersionString"] = version_map[name]
@@ -276,7 +276,7 @@ def main():
                        "-Wl,-force_load," + str(own_archive), "-F" + str(output)]
             for dep in completed:
                 command += ["-framework", dep]
-            command += [str(root / "harfbuzz-prefix" / args.arch / "lib/libharfbuzz.a") if dep == "Libharfbuzz" and root.name in {"dyn4", "dyn4-final", "dyn5", "mpvkit-dyn5"} else str(input_binary(args.artifacts, dep)) for dep in PERMISSIVE]
+            command += [str(root / "harfbuzz-prefix" / args.arch / "lib/libharfbuzz.a") if dep == "Libharfbuzz" and True else str(input_binary(args.artifacts, dep)) for dep in PERMISSIVE]
             for system in SYSTEM:
                 command += ["-framework", system]
             swift_lib = subprocess.check_output(["/usr/bin/xcrun", "--find", "swiftc"], text=True).strip()
