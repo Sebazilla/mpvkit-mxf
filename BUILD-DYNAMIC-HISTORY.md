@@ -1,5 +1,10 @@
 # Replaceable macOS LGPL frameworks
 
+Historical record only. The commands and roots below apply to their corresponding
+historical tags, not to the current dyn6 drivers. Current root guards reject those
+old roots; use [BUILD-DYNAMIC.md](BUILD-DYNAMIC.md) for the dyn6 entry and
+[BUILD-DYNAMIC-DYN4.md](BUILD-DYNAMIC-DYN4.md) for dyn4 history.
+
 The dynamic variant retains the source versions and codec configuration of
 `0.41.0-mxf` (commit `f053e670846e80d451024f499ab557ec37f7a326`).
 Its selected product is `MPVKit`, never `MPVKit-GPL`. This build targets macOS

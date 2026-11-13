@@ -28,8 +28,11 @@ LGPL-3.0-or-later for the MPVKit wrapper/build material, as declared upstream.
 The component sources carry their own LGPL/permissive licences; full LGPL
 texts/notices for the dynamic variant are under Licenses/. This is technical
 provenance, not legal distribution clearance. In particular, the original
-FFmpeg --enable-nonfree setting and generated licence string are explicitly
-documented in BUILD-DYNAMIC.md.
+FFmpeg --enable-nonfree setting and generated licence string belong to the
+historical provenance in [BUILD-DYNAMIC-HISTORY.md](BUILD-DYNAMIC-HISTORY.md).
+The current dyn6 configuration disables nonfree and GPL; see
+[BUILD-DYNAMIC.md](BUILD-DYNAMIC.md) for the current build and limits, and
+[BUILD-DYNAMIC-DYN4.md](BUILD-DYNAMIC-DYN4.md) for the intervening source updates.
 
 ## Versioning
 
